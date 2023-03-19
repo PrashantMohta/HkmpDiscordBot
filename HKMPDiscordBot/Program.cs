@@ -68,7 +68,7 @@ namespace HKMPBot
         {
             if(arg.Channel.Id == Settings.Instance.AdminChannelId && arg.Author.Id != _client.CurrentUser.Id)
             {
-                var safeContent = "";
+                var safeContent = arg.CleanContent;
                 if (arg.CleanContent.StartsWith("./"))
                 {
                     safeContent = arg.CleanContent.Substring(1);
@@ -84,7 +84,7 @@ namespace HKMPBot
             }
             if(arg.Channel.Id == Settings.Instance.ChannelId && arg.Author.Id != _client.CurrentUser.Id)
             {
-                var safeContent = "";
+                var safeContent = arg.CleanContent;
                 if (arg.CleanContent.StartsWith("/"))
                 {
                     safeContent = "//" +arg.CleanContent.Substring(1);
