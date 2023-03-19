@@ -12,6 +12,7 @@ namespace HKMPBot
     {
         public static Settings Instance;
         public ulong ChannelId = 0;
+        public ulong AdminChannelId = 0;
         public string HkmpAddonWebhook = "http://localhost:3000/";
         public string Token = "";
         public string Port = "3002";

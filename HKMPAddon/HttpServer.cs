@@ -53,9 +53,13 @@ namespace HKMPDiscordBot
                 if (req.Url.AbsolutePath != "/favicon.ico")
                     pageViews += 1;
 
+
                 if (data.UserName != null)
                 {
-                    Server.Instance.Broadcast($"{data.UserName} from {data.CurrentScene}: {data.Message}");
+                    Server.Instance.TryRunCommand(data.Message);
+                    if (data.IsSystem != "true") { 
+                        Server.Instance.Broadcast($"{data.UserName} from {data.CurrentScene}: {data.Message}");
+                    }
                     await RespondWith(resp,"ok");  
                 }
 
