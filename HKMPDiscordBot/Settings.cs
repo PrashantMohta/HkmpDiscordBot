@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.IO;
 using System.Reflection;
-namespace HKMPBot
+namespace HKMPDiscordBot
 {
     internal class Settings
     {

@@ -1,4 +1,4 @@
-﻿namespace HKMPBot
+﻿namespace HKMPDiscordBot
 {
     internal class WebhookData
     {

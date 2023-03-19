@@ -1,5 +1,4 @@
 ﻿using Hkmp.Api.Command.Server;
-using HKMPDiscordBot;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Net.Http;

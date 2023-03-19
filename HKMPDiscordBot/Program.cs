@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-
-namespace HKMPBot
+using static HKMPDiscordBot.BetterRoomNames;
+namespace HKMPDiscordBot
 {
     internal class Program
     {
@@ -29,10 +29,17 @@ namespace HKMPBot
             {
                 adminChannel = await _client.GetChannelAsync(Settings.Instance.AdminChannelId) as IMessageChannel;
             }
-            if(w.isSystem != "true") { 
-                await channel!.SendMessageAsync($"{w.UserName} says `{w.Message.Replace("`","\\`")}`");
+
+            var embed = new EmbedBuilder()
+                .WithColor(new Color(0,0,0))
+                .WithAuthor($"{w.UserName} Says")
+                .WithDescription(w.Message)
+                .WithFooter($"From {GetRoomName(w.CurrentScene)}");
+
+            if (w.isSystem != "true") {     
+                await channel!.SendMessageAsync(null,false,embed.Build());
             } else {
-                await adminChannel!.SendMessageAsync($"{w.UserName} says `{w.Message.Replace("`", "\\`")}`");
+                await adminChannel!.SendMessageAsync(null, false, embed.WithCurrentTimestamp().Build());
             }
         }
 
@@ -88,6 +95,10 @@ namespace HKMPBot
                 if (arg.CleanContent.StartsWith("/"))
                 {
                     safeContent = "//" +arg.CleanContent.Substring(1);
+                }
+                if (arg.CleanContent.StartsWith("\""))
+                {
+                    safeContent = "''" + arg.CleanContent.Substring(1);
                 }
                 Console.WriteLine($"{arg.Author.Username}:{arg.CleanContent}");
                 httpClient.PostAsync(Settings.Instance.HkmpAddonWebhook, new StringContent(JsonConvert.SerializeObject(new Dictionary<string, string>

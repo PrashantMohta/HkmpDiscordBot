@@ -2,7 +2,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace HKMPDiscordBot
+namespace DiscordIntegrationAddon
 {
     internal class Settings
     {
@@ -10,6 +10,8 @@ namespace HKMPDiscordBot
         public static Settings Instance;
         public string DiscordBotWebhook = "http://localhost:3002/";
         public string Port = "3000";
+
+        public bool Locations = true;
 
         public static void Load()
         {

@@ -1,7 +1,7 @@
 ﻿using Hkmp.Logging;
 using System;
 
-namespace HKMPDiscordBot
+namespace DiscordIntegrationAddon
 {
     public class ChatEventArgs : EventArgs
     {

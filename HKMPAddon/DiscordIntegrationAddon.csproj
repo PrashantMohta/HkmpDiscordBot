@@ -58,9 +58,6 @@
 	<Reference Include="Hkmp">
 		<HintPath>$(HollowKnightRefs)/Mods/HKMP/HKMP.dll</HintPath>
 	</Reference>
-	<Reference Include="HkmpPouch">
-		<HintPath>$(HollowKnightRefs)/Mods/HkmpPouch/HkmpPouch.dll</HintPath>
-	</Reference>
 	<Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>

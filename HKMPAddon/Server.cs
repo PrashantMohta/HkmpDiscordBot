@@ -1,5 +1,4 @@
-﻿using DiscordIntegrationAddon;
-using Hkmp.Api.Command.Server;
+﻿using Hkmp.Api.Command.Server;
 using Hkmp.Api.Server;
 using Hkmp.Logging;
 using Newtonsoft.Json;
@@ -7,12 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace HKMPDiscordBot
+namespace DiscordIntegrationAddon
 {
-    internal class Server : ServerAddon
+    public class Server : ServerAddon
     {
 
         public static Server Instance { get; private set; }
@@ -20,13 +18,16 @@ namespace HKMPDiscordBot
 
         protected override string Name => Settings.Name;
 
-        protected override string Version => "v0.1";
+        protected override string Version => "v0.2";
 
         internal static readonly HttpClient httpClient = new HttpClient();
 
         internal static CommandSender commandSender = new CommandSender();
 
-        internal static Dictionary<string, IServerCommand> Commands;
+        public Server()
+        {
+            Instance = this;
+        }
 
         public override void Initialize(IServerApi serverApi)
         {
@@ -41,29 +42,13 @@ namespace HKMPDiscordBot
             var li = new LogInterceptor();
             loggersList.Add(li);
             li.OnChatMessage += Li_OnChatMessage;
-
-            serverApi.ServerManager.PlayerConnectEvent += ServerManager_PlayerConnectEvent;
-
-            
+            ServerApi.CommandManager.RegisterCommand(new RedactLocations());
             //Start a HTTP server on another thread
             Thread thread1 = new Thread(HttpServer.Start);
             thread1.Start();
         }
 
-        private void ServerManager_PlayerConnectEvent(IServerPlayer obj)
-        {
-            if(Commands == null) { 
-                //Reflection into HKMP to get the ban command
-                Type ServerCommandManagerR = typeof(IServerApi).Assembly.GetType("Hkmp.Game.Command.Server.ServerCommandManager");
-
-                var Commands = (Dictionary<string, IServerCommand>)ServerCommandManagerR.GetField("Commands", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ServerApi.CommandManager);
-                foreach (var command in Commands)
-                {
-                    Console.WriteLine($"{command.Key}");
-                }
-            }
-
-        }
+        
 
         internal bool TryRunCommand(string message)
         {
@@ -86,11 +71,12 @@ namespace HKMPDiscordBot
             {
                 return;
             }
+
             Console.WriteLine($"{player.Username} from {player.CurrentScene} says {e.Message}");
             httpClient.PostAsync(Settings.Instance.DiscordBotWebhook, new StringContent(JsonConvert.SerializeObject(new Dictionary<string, string>
             {
                 { "Username",player.Username },
-                { "CurrentScene",player.CurrentScene },
+                { "CurrentScene",Settings.Instance.Locations ? player.CurrentScene : "████████████████████"},
                 { "Message", e.Message }
             })));
         }
