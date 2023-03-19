@@ -28,21 +28,6 @@ namespace HKMPDiscordBot
 
         internal static Dictionary<string, IServerCommand> Commands;
 
-        private string[] GetArguments(string message)
-        {
-            var argList = new List<string>();
-
-            var argRegex = new Regex("([^\"\\s]\\S*|\".*?\")");
-            var matches = argRegex.Matches(message);
-
-            foreach (var match in matches)
-            {
-                argList.Add(match.ToString().Replace("\"", ""));
-            }
-
-            return argList.ToArray();
-        }
-
         public override void Initialize(IServerApi serverApi)
         {
             Settings.Load();

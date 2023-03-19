@@ -1,12 +1,8 @@
 ﻿using Hkmp.Api.Command.Server;
 using HKMPDiscordBot;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DiscordIntegrationAddon
 {
