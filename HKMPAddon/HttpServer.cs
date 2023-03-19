@@ -57,8 +57,13 @@ namespace DiscordIntegrationAddon
                 if (data.UserName != null)
                 {
                     Server.Instance.TryRunCommand(data.Message);
-                    if (data.IsSystem != "true") { 
-                        Server.Instance.Broadcast($"{data.UserName} from {data.CurrentScene}: {data.Message}");
+                    if (data.IsSystem != "true") {
+                        var message = $"{data.UserName} from {data.CurrentScene}: {data.Message}";
+                        if(message.Length > 100)
+                        {
+                            message = message.Substring(0, 100);
+                        }
+                        Server.Instance.Broadcast(message+"...");
                     }
                     await RespondWith(resp,"ok");  
                 }
