@@ -24,6 +24,17 @@ namespace DiscordIntegrationAddon
 
         internal static CommandSender commandSender = new CommandSender();
 
+        public void SendToDiscord(Dictionary<string, string> Payload)
+        {
+            try
+            {
+                httpClient.PostAsync(Settings.Instance.DiscordBotWebhook, new StringContent(JsonConvert.SerializeObject(Payload)));
+            }
+            catch (Exception ex) {
+                Console.WriteLine(ex);            
+            }
+        }
+
         public Server()
         {
             Instance = this;
@@ -46,13 +57,20 @@ namespace DiscordIntegrationAddon
             //Start a HTTP server on another thread
             Thread thread1 = new Thread(HttpServer.Start);
             thread1.Start();
+
+            SendToDiscord(new Dictionary<string, string>
+            {
+                { "Username", "BotSeeker" },
+                { "CurrentScene", "Waterwastes"},
+                { "Message", "I'm online! check connected players using ./list command." }
+            });
         }
 
-        
 
-        internal bool TryRunCommand(string message)
+        internal bool TryRunCommand(string message,bool isSystem)
         {
-            //Reflection into HKMP to get the ban command
+            commandSender.IsSystem = isSystem;
+            //Reflection into HKMP to run the command
             Type ServerCommandManagerR = typeof(IServerApi).Assembly.GetType("Hkmp.Game.Command.Server.ServerCommandManager");
             object[] parametersArray = new object[] { commandSender, message };
             return (bool)ServerCommandManagerR.GetMethod("ProcessCommand", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic).Invoke(ServerApi.CommandManager, parametersArray);
@@ -72,13 +90,13 @@ namespace DiscordIntegrationAddon
                 return;
             }
 
-            Console.WriteLine($"{player.Username} from {player.CurrentScene} says {e.Message}");
-            httpClient.PostAsync(Settings.Instance.DiscordBotWebhook, new StringContent(JsonConvert.SerializeObject(new Dictionary<string, string>
+            Console.WriteLine($"{player.Username} in {player.CurrentScene} says {e.Message}");
+            SendToDiscord(new Dictionary<string, string>
             {
                 { "Username",player.Username },
                 { "CurrentScene",Settings.Instance.Locations ? player.CurrentScene : "████████████████████"},
                 { "Message", e.Message }
-            })));
+            });
         }
     }
 }

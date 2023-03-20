@@ -41,23 +41,30 @@ namespace HKMPDiscordBot
                 HttpListenerRequest req = ctx.Request;
                 HttpListenerResponse resp = ctx.Response;
 
-                // Print out some info about the request
-                Console.WriteLine($"Request #: {++requestCount}");
-                var body = "";
-                using (var inputStream = new StreamReader(req.InputStream))
-                {
-                    body = inputStream.ReadToEnd();
-                }
-                Console.WriteLine(body);
-                WebhookData data = JsonConvert.DeserializeObject<WebhookData>(body);
+                try { 
+                    // Print out some info about the request
+                    Console.WriteLine($"Request #: {++requestCount}");
+                    var body = "";
+                    using (var inputStream = new StreamReader(req.InputStream))
+                    {
+                        body = inputStream.ReadToEnd();
+                    }
+                    Console.WriteLine(body);
+                    WebhookData data = JsonConvert.DeserializeObject<WebhookData>(body);
 
-                if (req.Url.AbsolutePath != "/favicon.ico")
-                    pageViews += 1;
+                    if (req.Url.AbsolutePath != "/favicon.ico")
+                        pageViews += 1;
 
-                if (data.UserName != null)
+
+                    if (data.UserName != null)
+                    {
+                        Callback(data);
+                        await RespondWith(resp, "ok");
+                    }
+                } catch (Exception ex)
                 {
-                    Callback(data);
-                    await RespondWith(resp, "ok");
+                    Program.Instance.SendErrorMessageToAdmin(ex.ToString());
+                    await RespondWith(resp, ex.Message);
                 }
 
             }

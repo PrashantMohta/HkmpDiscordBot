@@ -7,19 +7,23 @@ namespace DiscordIntegrationAddon
 {
     internal class CommandSender : ICommandSender
     {
-        public bool IsAuthorized => true;
+        public bool IsAuthorized => IsSystem;
 
         public CommandSenderType Type => CommandSenderType.Console;
 
+        public bool IsSystem = true;
+
         public void SendMessage(string message)
         {
-            Server.httpClient.PostAsync(Settings.Instance.DiscordBotWebhook, new StringContent(JsonConvert.SerializeObject(new Dictionary<string, string>
-            {
-                { "Username","HKMP" },
-                { "CurrentScene","Server" },
-                { "Message", message },
-                { "IsSystem", "true" }
-            })));
+            Server.Instance.SendToDiscord(
+                new Dictionary<string, string>
+                {
+                    { "Username","HKMP" },
+                    { "CurrentScene","Server" },
+                    { "Message", message },
+                    { "IsSystem", IsSystem ? "true" : "false"}
+                }
+            );
         }
     }
 }

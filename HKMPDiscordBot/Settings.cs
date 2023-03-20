@@ -11,6 +11,7 @@ namespace HKMPDiscordBot
         public string HkmpAddonWebhook = "http://localhost:3000/";
         public string Token = "";
         public string Port = "3002";
+        public string Name = "BotSeeker";
 
         public static void Load()
         {

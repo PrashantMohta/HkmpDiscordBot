@@ -3,14 +3,17 @@ using Discord.WebSocket;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using static HKMPDiscordBot.BetterRoomNames;
 namespace HKMPDiscordBot
 {
-    internal class Program
+    internal partial class Program
     {
+        public static Program Instance;
         private DiscordSocketClient _client;
         private IMessageChannel channel,adminChannel;
 
@@ -20,26 +23,31 @@ namespace HKMPDiscordBot
             Console.WriteLine(msg.ToString());
             return Task.CompletedTask;
         }
-        public async void callback(WebhookData w)
+
+        public Program()
         {
-            if(channel == null) { 
-                channel = await _client.GetChannelAsync(Settings.Instance.ChannelId) as IMessageChannel;
-            }
-            if (adminChannel == null)
+            Instance = this;
+        }
+
+        public void callback(WebhookData w)
+        {
+            //var fileStream = new FileStream(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/godseeker.png", FileMode.Open);
+            //var image = new Image(fileStream);
+            //await _client.CurrentUser.ModifyAsync(u => u.Avatar = image);
+            try
             {
-                adminChannel = await _client.GetChannelAsync(Settings.Instance.AdminChannelId) as IMessageChannel;
+                if (w.isSystem != "true")
+                {
+                    SendResponseMessageToUsers(w);
+                }
+                else
+                {
+                    SendResponseMessageToAdmin(w.Message);
+                }
             }
-
-            var embed = new EmbedBuilder()
-                .WithColor(new Color(0,0,0))
-                .WithAuthor($"{w.UserName} Says")
-                .WithDescription(w.Message)
-                .WithFooter($"From {GetRoomName(w.CurrentScene)}");
-
-            if (w.isSystem != "true") {     
-                await channel!.SendMessageAsync(null,false,embed.Build());
-            } else {
-                await adminChannel!.SendMessageAsync(null, false, embed.WithCurrentTimestamp().Build());
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
             }
         }
 
@@ -49,7 +57,13 @@ namespace HKMPDiscordBot
             Settings.Load();
             HttpServer.url = $"http://*:{Settings.Instance.Port}/";
             Thread thread1 = new Thread(() => {
-                HttpServer.Start(callback);
+                try { 
+                    HttpServer.Start(callback);
+                } catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    SendErrorMessageToAdmin(e.ToString());
+                }
             });
             thread1.Start();
             var config = new DiscordSocketConfig
@@ -81,13 +95,13 @@ namespace HKMPDiscordBot
                     safeContent = arg.CleanContent.Substring(1);
                 }
                 Console.WriteLine($"{arg.Author.Username}:{arg.CleanContent}");
-                httpClient.PostAsync(Settings.Instance.HkmpAddonWebhook, new StringContent(JsonConvert.SerializeObject(new Dictionary<string, string>
+                SendToHKMPAddon(new Dictionary<string, string>
                 {
                     { "Username",arg.Author.Username },
                     { "CurrentScene", arg.Channel.Name },
                     { "Message", safeContent },
                     { "IsSystem", "true" }
-                })));
+                });
             }
             if(arg.Channel.Id == Settings.Instance.ChannelId && arg.Author.Id != _client.CurrentUser.Id)
             {
@@ -100,13 +114,17 @@ namespace HKMPDiscordBot
                 {
                     safeContent = "''" + arg.CleanContent.Substring(1);
                 }
+                if (arg.CleanContent.StartsWith("./list"))
+                {
+                    safeContent = arg.CleanContent.Substring(1);
+                }
                 Console.WriteLine($"{arg.Author.Username}:{arg.CleanContent}");
-                httpClient.PostAsync(Settings.Instance.HkmpAddonWebhook, new StringContent(JsonConvert.SerializeObject(new Dictionary<string, string>
+                SendToHKMPAddon(new Dictionary<string, string>
                 {
                     { "Username",arg.Author.Username },
                     { "CurrentScene", arg.Channel.Name },
                     { "Message", safeContent }
-                })));
+                });
             }
             return Task.Delay(0);
         }

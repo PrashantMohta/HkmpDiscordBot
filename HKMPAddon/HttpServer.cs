@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -16,15 +17,23 @@ namespace DiscordIntegrationAddon
 
         public static async Task RespondWith(HttpListenerResponse resp, string response)
         {
-            Console.WriteLine($"response:{response}");
-            byte[] data = Encoding.UTF8.GetBytes(response);
-            resp.ContentType = "text/html";
-            resp.ContentEncoding = Encoding.UTF8;
-            resp.ContentLength64 = data.LongLength;
+            try
+            {
+                Console.WriteLine($"response:{response}");
+                byte[] data = Encoding.UTF8.GetBytes(response);
+                resp.ContentType = "text/html";
+                resp.ContentEncoding = Encoding.UTF8;
+                resp.ContentLength64 = data.LongLength;
 
-            // Write out to the response stream (asynchronously), then close it
-            await resp.OutputStream.WriteAsync(data, 0, data.Length);
-            resp.Close();
+                // Write out to the response stream (asynchronously), then close it
+                await resp.OutputStream.WriteAsync(data, 0, data.Length);
+                resp.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"response error:{ex}");
+                resp.Close();
+            }
         }
         public static async Task HandleIncomingConnections()
         {
@@ -33,41 +42,59 @@ namespace DiscordIntegrationAddon
             // While a user hasn't visited the `shutdown` url, keep on handling requests
             while (runServer)
             {
+
                 // Will wait here until we hear from a connection
                 HttpListenerContext ctx = await listener.GetContextAsync();
 
                 // Peel out the requests and response objects
                 HttpListenerRequest req = ctx.Request;
                 HttpListenerResponse resp = ctx.Response;
-
-                // Print out some info about the request
-                Console.WriteLine($"Request #: {++requestCount}");
-                var body = "";
-                using (var inputStream = new StreamReader(req.InputStream))
+                try
                 {
-                    body = inputStream.ReadToEnd();
-                }
-                Console.WriteLine(body);
-                WebhookData data = JsonConvert.DeserializeObject<WebhookData>(body);
-
-                if (req.Url.AbsolutePath != "/favicon.ico")
-                    pageViews += 1;
-
-
-                if (data.UserName != null)
-                {
-                    Server.Instance.TryRunCommand(data.Message);
-                    if (data.IsSystem != "true") {
-                        var message = $"{data.UserName} from {data.CurrentScene}: {data.Message}";
-                        if(message.Length > 100)
-                        {
-                            message = message.Substring(0, 100);
-                        }
-                        Server.Instance.Broadcast(message+"...");
+                    // Print out some info about the request
+                    Console.WriteLine($"Request #: {++requestCount}");
+                    var body = "";
+                    using (var inputStream = new StreamReader(req.InputStream))
+                    {
+                        body = inputStream.ReadToEnd();
                     }
-                    await RespondWith(resp,"ok");  
-                }
+                    Console.WriteLine(body);
+                    WebhookData data = JsonConvert.DeserializeObject<WebhookData>(body);
 
+                    if (req.Url.AbsolutePath != "/favicon.ico")
+                        pageViews += 1;
+
+
+                    if (data.UserName != null)
+                    {
+                        Server.Instance.TryRunCommand(data.Message, data.IsSystem == "true");
+                        if (data.IsSystem != "true")
+                        {
+                            var message = $"{data.UserName} in {data.CurrentScene}:{data.Message}";
+                            if (message.Length > 250)
+                            {
+                                message = message.Substring(0, 250);
+                                Server.Instance.Broadcast(message + "...");
+                            }
+                            else
+                            {
+                                Server.Instance.Broadcast(message);
+                            }
+                        }
+                        await RespondWith(resp, "ok");
+                    }
+                } catch (Exception ex) {
+                    await RespondWith(resp, $"{ex}");
+                    Server.Instance.SendToDiscord(
+                        new Dictionary<string, string>
+                        {
+                            { "Username","ERROR" },
+                            { "CurrentScene",ex.Message },
+                            { "Message", ex.StackTrace },
+                            { "IsSystem", "true" }
+                        }
+                    );
+                }
             }
         }
 
