@@ -18,8 +18,8 @@ namespace DiscordIntegrationAddon
             Server.Instance.SendToDiscord(
                 new Dictionary<string, string>
                 {
-                    { "Username","HKMP" },
-                    { "CurrentScene","Server" },
+                    { "Username", Settings.Instance.Name},
+                    { "CurrentScene",FlavorStrings.GetBotLocationMessage() },
                     { "Message", message },
                     { "IsSystem", IsSystem ? "true" : "false"}
                 }

@@ -16,7 +16,7 @@ namespace DiscordIntegrationAddon
         public static Server Instance { get; private set; }
         public override bool NeedsNetwork => false;
 
-        protected override string Name => Settings.Name;
+        protected override string Name => Settings.AddonName;
 
         protected override string Version => "v0.2";
 
@@ -60,9 +60,25 @@ namespace DiscordIntegrationAddon
 
             SendToDiscord(new Dictionary<string, string>
             {
-                { "Username", "BotSeeker" },
-                { "CurrentScene", "Waterwastes"},
-                { "Message", "I'm online! check connected players using ./list command." }
+                { "Username", Settings.Instance.Name },
+                { "CurrentScene", FlavorStrings.GetBotLocationMessage()},
+                { "Message", "I'm online! \n Check the connected players using the `./list` command." }
+            });
+
+            ServerApi.ServerManager.PlayerConnectEvent += ServerManager_PlayerConnectEvent;
+        }
+
+        private void ServerManager_PlayerConnectEvent(IServerPlayer player)
+        {
+            if(player == null)
+            {
+                return;
+            }
+            SendToDiscord(new Dictionary<string, string>
+            {
+                { "Username", Settings.Instance.Name },
+                { "CurrentScene", Settings.Instance.Locations ? player.CurrentScene : "████████████████████"},
+                { "Message", FlavorStrings.GetConnectMessage(player) }
             });
         }
 

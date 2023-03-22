@@ -41,25 +41,38 @@ namespace HKMPDiscordBot
                 HttpListenerRequest req = ctx.Request;
                 HttpListenerResponse resp = ctx.Response;
 
-                try { 
-                    // Print out some info about the request
-                    Console.WriteLine($"Request #: {++requestCount}");
-                    var body = "";
-                    using (var inputStream = new StreamReader(req.InputStream))
+                try {
+                    if (req.HttpMethod != "POST")
                     {
-                        body = inputStream.ReadToEnd();
-                    }
-                    Console.WriteLine(body);
-                    WebhookData data = JsonConvert.DeserializeObject<WebhookData>(body);
-
-                    if (req.Url.AbsolutePath != "/favicon.ico")
-                        pageViews += 1;
-
-
-                    if (data.UserName != null)
+                        resp.StatusCode = 405;
+                        byte[] ResponseBody = Encoding.UTF8.GetBytes("Not Allowed");
+                        await resp.OutputStream.WriteAsync(ResponseBody, 0, ResponseBody.Length);
+                        resp.Close();
+                    } else
                     {
-                        Callback(data);
-                        await RespondWith(resp, "ok");
+                        // Print out some info about the request
+                        Console.WriteLine($"Request #: {++requestCount}");
+                        var body = "";
+                        using (var inputStream = new StreamReader(req.InputStream))
+                        {
+                            body = inputStream.ReadToEnd();
+                        }
+                        Console.WriteLine(body);
+                        WebhookData data = JsonConvert.DeserializeObject<WebhookData>(body);
+
+                        if (req.Url.AbsolutePath != "/favicon.ico")
+                            pageViews += 1;
+
+
+                        if (data != null && data.UserName != null)
+                        {
+                            Callback(data);
+                            await RespondWith(resp, "ok");
+                        }
+                        else
+                        {
+                            await RespondWith(resp, "error");
+                        }
                     }
                 } catch (Exception ex)
                 {

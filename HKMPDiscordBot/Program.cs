@@ -80,9 +80,16 @@ namespace HKMPDiscordBot
             await _client.StartAsync();
 
             _client.MessageReceived += _client_MessageReceived;
+            _client.Ready += _client_Ready;
 
             // Block this task until the program is closed.
             await Task.Delay(-1);
+        }
+
+        private Task _client_Ready()
+        {
+            SlashCommands.MuteUnmute(_client);
+            return Task.CompletedTask;
         }
 
         private Task _client_MessageReceived(SocketMessage arg)

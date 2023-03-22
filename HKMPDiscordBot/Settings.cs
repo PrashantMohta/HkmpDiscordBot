@@ -12,6 +12,8 @@ namespace HKMPDiscordBot
         public string Token = "";
         public string Port = "3002";
         public string Name = "BotSeeker";
+        public bool IsMuted = false;
+        public ulong GuildId = 0;
 
         public static void Load()
         {
@@ -22,6 +24,7 @@ namespace HKMPDiscordBot
             Instance = new Settings();
             try { 
                 Instance = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(filePath));
+                File.WriteAllText(filePath, JsonConvert.SerializeObject(Instance));
             }
             catch
             {

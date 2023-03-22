@@ -17,6 +17,7 @@ namespace HKMPDiscordBot
 
         public void SendToHKMPAddon(Dictionary<string, string> Payload)
         {
+            if (Settings.Instance.IsMuted) { return; }
             try
             {
                 httpClient.PostAsync(Settings.Instance.HkmpAddonWebhook, new StringContent(JsonConvert.SerializeObject(Payload)));
@@ -43,7 +44,6 @@ namespace HKMPDiscordBot
         }
         public async void SendResponseMessageToAdmin(string message)
         {
-
             var embed = new EmbedBuilder()
                 .WithColor(new Color(0, 0, 0))
                 .WithAuthor($"{Settings.Instance.Name} Says")
@@ -59,6 +59,7 @@ namespace HKMPDiscordBot
 
         public async void SendResponseMessageToUsers(WebhookData w)
         {
+            if (Settings.Instance.IsMuted) { return; }
             if (channel == null)
             {
                 channel = await _client.GetChannelAsync(Settings.Instance.ChannelId) as IMessageChannel;

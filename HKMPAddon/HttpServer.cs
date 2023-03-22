@@ -51,37 +51,49 @@ namespace DiscordIntegrationAddon
                 HttpListenerResponse resp = ctx.Response;
                 try
                 {
-                    // Print out some info about the request
-                    Console.WriteLine($"Request #: {++requestCount}");
-                    var body = "";
-                    using (var inputStream = new StreamReader(req.InputStream))
+                    if(req.HttpMethod != "POST")
                     {
-                        body = inputStream.ReadToEnd();
-                    }
-                    Console.WriteLine(body);
-                    WebhookData data = JsonConvert.DeserializeObject<WebhookData>(body);
-
-                    if (req.Url.AbsolutePath != "/favicon.ico")
-                        pageViews += 1;
-
-
-                    if (data.UserName != null)
-                    {
-                        Server.Instance.TryRunCommand(data.Message, data.IsSystem == "true");
-                        if (data.IsSystem != "true")
+                        resp.StatusCode = 405;
+                        byte[] ResponseBody = Encoding.UTF8.GetBytes("Not Allowed");
+                        await resp.OutputStream.WriteAsync(ResponseBody, 0, ResponseBody.Length);
+                        resp.Close();
+                    } else { 
+                        // Print out some info about the request
+                        Console.WriteLine($"Request #: {++requestCount}");
+                        var body = "";
+                        using (var inputStream = new StreamReader(req.InputStream))
                         {
-                            var message = $"{data.UserName} in {data.CurrentScene}:{data.Message}";
-                            if (message.Length > 250)
-                            {
-                                message = message.Substring(0, 250);
-                                Server.Instance.Broadcast(message + "...");
-                            }
-                            else
-                            {
-                                Server.Instance.Broadcast(message);
-                            }
+                            body = inputStream.ReadToEnd();
                         }
-                        await RespondWith(resp, "ok");
+                        Console.WriteLine(body);
+                        WebhookData data = JsonConvert.DeserializeObject<WebhookData>(body);
+
+                        if (req.Url.AbsolutePath != "/favicon.ico")
+                            pageViews += 1;
+
+
+                        if (data != null && data.UserName != null)
+                        {
+                            Server.Instance.TryRunCommand(data.Message, data.IsSystem == "true");
+                            if (data.IsSystem != "true")
+                            {
+                                var message = $"{data.UserName} in {data.CurrentScene}:{data.Message}";
+                                if (message.Length > 250)
+                                {
+                                    message = message.Substring(0, 250);
+                                    Server.Instance.Broadcast(message + "...");
+                                }
+                                else
+                                {
+                                    Server.Instance.Broadcast(message);
+                                }
+                            }
+                            await RespondWith(resp, "ok");
+                        }
+                        else
+                        {
+                            await RespondWith(resp, "error");
+                        }
                     }
                 } catch (Exception ex) {
                     await RespondWith(resp, $"{ex}");

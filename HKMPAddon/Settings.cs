@@ -6,7 +6,9 @@ namespace DiscordIntegrationAddon
 {
     internal class Settings
     {
-        public const string Name = "DiscordBot";
+
+        public static string AddonName = "DiscordBot";
+        public string Name = "BotSeeker";
         public static Settings Instance;
         public string DiscordBotWebhook = "http://localhost:3002/";
         public string Port = "3000";
@@ -23,6 +25,7 @@ namespace DiscordIntegrationAddon
             try
             {
                 Instance = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(filePath));
+                File.WriteAllText(filePath, JsonConvert.SerializeObject(Instance));
             }
             catch
             {
