@@ -1,14 +1,10 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using static HKMPDiscordBot.BetterRoomNames;
 namespace HKMPDiscordBot
 {
     internal partial class Program

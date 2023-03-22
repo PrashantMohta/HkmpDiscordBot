@@ -1,5 +1,4 @@
-﻿using Hkmp.Api.Command.Server;
-using Hkmp.Api.Server;
+﻿using Hkmp.Api.Server;
 using Hkmp.Logging;
 using Newtonsoft.Json;
 using System;
@@ -77,7 +76,7 @@ namespace DiscordIntegrationAddon
             SendToDiscord(new Dictionary<string, string>
             {
                 { "Username", Settings.Instance.Name },
-                { "CurrentScene", Settings.Instance.Locations ? player.CurrentScene : "████████████████████"},
+                { "CurrentScene", Settings.Instance.Locations ? BetterRoomNames.GetRoomName(player.CurrentScene) : "████████████████████"},
                 { "Message", FlavorStrings.GetConnectMessage(player) }
             });
         }
@@ -110,7 +109,7 @@ namespace DiscordIntegrationAddon
             SendToDiscord(new Dictionary<string, string>
             {
                 { "Username",player.Username },
-                { "CurrentScene",Settings.Instance.Locations ? player.CurrentScene : "████████████████████"},
+                { "CurrentScene",Settings.Instance.Locations ? BetterRoomNames.GetRoomName(player.CurrentScene) : "████████████████████"},
                 { "Message", e.Message }
             });
         }

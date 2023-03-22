@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HKMPDiscordBot
+﻿namespace DiscordIntegrationAddon
 {
+
     internal static class BetterRoomNames
     {
         /// https://github.com/KaanGaming/HollowKnightDRPC/blob/1.5-mapi-version/HollowKnightDRPC/RoomNames.cs
@@ -1040,4 +1035,5 @@ namespace HKMPDiscordBot
         }
 
     }
+
 }

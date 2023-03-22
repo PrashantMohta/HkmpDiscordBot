@@ -1,5 +1,4 @@
 ﻿using Hkmp.Api.Command.Server;
-using System;
 
 namespace DiscordIntegrationAddon
 {
