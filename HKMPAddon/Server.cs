@@ -44,7 +44,7 @@ namespace DiscordIntegrationAddon
             ServerApi.CommandManager.RegisterCommand(new RedactLocations());
 
             //start webhook server
-            var url = $"http://*:{Settings.Instance.Port}/";
+            var url = $"http://{Settings.Instance.HostName}:{Settings.Instance.Port}/";
             var webHookServer = new WebhookServer(url,webhookCallback);
             webHookServer.ExceptionHandler = this.webhookExceptionHandler;
             //on another thread

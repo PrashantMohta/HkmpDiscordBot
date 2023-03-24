@@ -8,6 +8,7 @@ namespace DiscordIntegrationAddon
         public static string AddonName = "DiscordBot";
         public string Name = "BotSeeker";
         public string DiscordBotWebhook = "http://localhost:3002/";
+        public string HostName = "localhost";
         public string Port = "3000";
 
         public bool Locations = true;

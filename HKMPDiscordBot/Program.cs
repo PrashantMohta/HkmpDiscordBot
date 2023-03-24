@@ -31,7 +31,7 @@ namespace HKMPDiscordBot
         public async Task MainAsync()
         {
             Settings.Initialise();
-            var url = $"http://*:{Settings.Instance.Port}/";
+            var url = $"http://{Settings.Instance.HostName}:{Settings.Instance.Port}/";
             webhookClient = new WebhookClient(Settings.Instance.HkmpAddonWebhook);
 
             var webHookServer = new WebhookServer(url, webhookCallback);
