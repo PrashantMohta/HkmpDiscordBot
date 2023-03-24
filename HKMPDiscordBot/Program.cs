@@ -1,7 +1,9 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using System;
+using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Webhooks;
@@ -72,16 +74,23 @@ namespace HKMPDiscordBot
             SendErrorMessageToAdmin(ex.ToString());
         }
 
-        private void webhookCallback(HttpListenerContext ctx, Webhooks.WebhookData w)
+        private async void webhookCallback(HttpListenerContext ctx, Webhooks.WebhookData w)
         {
             if (w != null && w.UserName != null)
             {
-                //var fileStream = new FileStream(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/godseeker.png", FileMode.Open);
-                //var image = new Image(fileStream);
-                //await _client.CurrentUser.ModifyAsync(u => u.Avatar = image);
+                //todo remember to comment this once the thingy is fixed
+                /*var fileStream = new FileStream(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/godseeker.png", FileMode.Open);
+                var image = new Image(fileStream);
+                await _client.CurrentUser.ModifyAsync(u => {
+                    u.Avatar = image;
+                    //u.Username = "BotSeeker";
+                });
+                fileStream.Dispose();*/
+
+
                 try
                 {
-                    if (w.IsSystem != "true")
+                    if (!w.IsSystem)
                     {
                         SendResponseMessageToUsers(w);
                     }
@@ -124,7 +133,7 @@ namespace HKMPDiscordBot
                     UserName = arg.Author.Username,
                     CurrentScene = arg.Channel.Name,
                     Message = safeContent,
-                    IsSystem = "true"
+                    IsSystem = true
                 });
             }
             if(arg.Channel.Id == Settings.Instance.ChannelId && arg.Author.Id != _client.CurrentUser.Id)

@@ -5,6 +5,6 @@
         public string UserName;
         public string CurrentScene;
         public string Message;
-        public string IsSystem;
+        public bool IsSystem;
     }
 }

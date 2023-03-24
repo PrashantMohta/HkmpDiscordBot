@@ -55,7 +55,7 @@ namespace DiscordIntegrationAddon
             {
                 UserName = Settings.Instance.Name,
                 CurrentScene = FlavorStrings.GetBotLocationMessage(),
-                Message = "I'm online! \n Check the connected players using the `./list` command."
+                Message = "I'm online! \n Check the connected players using the `?list` command."
             });
 
             ServerApi.ServerManager.PlayerConnectEvent += ServerManager_PlayerConnectEvent;
@@ -68,7 +68,7 @@ namespace DiscordIntegrationAddon
                 UserName = "ERROR",
                 CurrentScene = ex.Message,
                 Message = ex.StackTrace,
-                IsSystem = "true"
+                IsSystem = true
             });
         }
 
@@ -76,8 +76,8 @@ namespace DiscordIntegrationAddon
         {
             if (data != null && data.UserName != null)
             {
-                Server.Instance.TryRunCommand(data.Message, data.IsSystem == "true");
-                if (data.IsSystem != "true")
+                Server.Instance.TryRunCommand(data.Message, data.IsSystem);
+                if (!data.IsSystem)
                 {
                     var message = $"{data.UserName} in {data.CurrentScene}:{data.Message}";
                     if (message.Length > 250)

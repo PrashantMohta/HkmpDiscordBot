@@ -17,7 +17,7 @@ namespace DiscordIntegrationAddon
                 UserName = Settings.Instance.Name,
                 CurrentScene = FlavorStrings.GetBotLocationMessage(),
                 Message = message,
-                IsSystem = IsSystem ? "true" : "false"
+                IsSystem = IsSystem
             });
         }
     }
