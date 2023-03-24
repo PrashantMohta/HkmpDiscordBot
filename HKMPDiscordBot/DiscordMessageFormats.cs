@@ -1,20 +1,18 @@
 ﻿using Discord;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Net.Http;
+using Webhooks;
 
 namespace HKMPDiscordBot
 {
     internal partial class Program
     {
 
-        public void SendToHKMPAddon(Dictionary<string, string> Payload)
+        public void SendToHKMPAddon(WebhookData Payload)
         {
             if (Settings.Instance.IsMuted) { return; }
             try
             {
-                httpClient.PostAsync(Settings.Instance.HkmpAddonWebhook, new StringContent(JsonConvert.SerializeObject(Payload)));
+                webhookClient.Send(Payload);
             }
             catch (Exception ex)
             {

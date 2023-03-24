@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32407.343
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HKMPDiscordBot", "HKMPDiscordBot\HKMPDiscordBot.csproj", "{2682158C-C72B-490C-A39E-0FF133DAEDA2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordIntegrationAddon", "HKMPAddon\DiscordIntegrationAddon.csproj", "{68056C6B-41A2-46FA-85B5-0AFCD22A9A65}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BotSharedItems", "Webhooks\BotSharedItems.shproj", "{B0EB6E97-B94C-4451-A1C9-FD9A197F8A54}"
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Webhooks\Webhooks.projitems*{2682158c-c72b-490c-a39e-0ff133daeda2}*SharedItemsImports = 5
+		Webhooks\Webhooks.projitems*{68056c6b-41a2-46fa-85b5-0afcd22a9a65}*SharedItemsImports = 5
+		Webhooks\Webhooks.projitems*{b0eb6e97-b94c-4451-a1c9-fd9a197f8a54}*SharedItemsImports = 13
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2682158C-C72B-490C-A39E-0FF133DAEDA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2682158C-C72B-490C-A39E-0FF133DAEDA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2682158C-C72B-490C-A39E-0FF133DAEDA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2682158C-C72B-490C-A39E-0FF133DAEDA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68056C6B-41A2-46FA-85B5-0AFCD22A9A65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68056C6B-41A2-46FA-85B5-0AFCD22A9A65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68056C6B-41A2-46FA-85B5-0AFCD22A9A65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68056C6B-41A2-46FA-85B5-0AFCD22A9A65}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9E916A65-526B-4A97-967E-9B9479648A56}
+	EndGlobalSection
+EndGlobal

@@ -64,4 +64,5 @@
     <None Include=".gitignore" />
     <None Include="ReadMe.md" />
   </ItemGroup>
+  <Import Project="..\Webhooks\Webhooks.projitems" Label="Shared" />
 </Project>

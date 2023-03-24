@@ -9,4 +9,6 @@
     <PackageReference Include="Discord.Net" Version="3.9.0" />
   </ItemGroup>
 
+  <Import Project="..\Webhooks\Webhooks.projitems" Label="Shared" />
+
 </Project>

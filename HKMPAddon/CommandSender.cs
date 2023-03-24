@@ -1,5 +1,5 @@
 ﻿using Hkmp.Api.Command.Server;
-using System.Collections.Generic;
+using Webhooks;
 
 namespace DiscordIntegrationAddon
 {
@@ -13,15 +13,12 @@ namespace DiscordIntegrationAddon
 
         public void SendMessage(string message)
         {
-            Server.Instance.SendToDiscord(
-                new Dictionary<string, string>
-                {
-                    { "Username", Settings.Instance.Name},
-                    { "CurrentScene",FlavorStrings.GetBotLocationMessage() },
-                    { "Message", message },
-                    { "IsSystem", IsSystem ? "true" : "false"}
-                }
-            );
+            Server.webhookClient.Send(new WebhookData { 
+                UserName = Settings.Instance.Name,
+                CurrentScene = FlavorStrings.GetBotLocationMessage(),
+                Message = message,
+                IsSystem = IsSystem ? "true" : "false"
+            });
         }
     }
 }

@@ -1,11 +1,10 @@
-﻿using Newtonsoft.Json;
-using System.IO;
-using System.Reflection;
+﻿using Utils;
+
 namespace HKMPDiscordBot
 {
-    internal class Settings
+    internal class Settings 
     {
-        public static Settings Instance;
+
         public ulong ChannelId = 0;
         public ulong AdminChannelId = 0;
         public string HkmpAddonWebhook = "http://localhost:3000/";
@@ -15,21 +14,10 @@ namespace HKMPDiscordBot
         public bool IsMuted = false;
         public ulong GuildId = 0;
 
-        public static void Load()
+        public static Settings Instance;
+        public static void Initialise()
         {
-            //load from file or give defaults and fail
-            
-            var currentDirectory = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
-            var filePath = Path.Combine(currentDirectory, "discord_bot.json");
-            Instance = new Settings();
-            try { 
-                Instance = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(filePath));
-                File.WriteAllText(filePath, JsonConvert.SerializeObject(Instance));
-            }
-            catch
-            {
-                File.WriteAllText(filePath,JsonConvert.SerializeObject(Instance));
-            }
+            Settings.Instance = new SettingsLoader<Settings>("discord_bot.json").Load();
         }
     }
 }

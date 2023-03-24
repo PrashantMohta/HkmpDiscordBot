@@ -1,10 +1,10 @@
-﻿namespace HKMPDiscordBot
+﻿namespace Webhooks
 {
-    internal class WebhookData
+    public class WebhookData
     {
         public string UserName;
         public string CurrentScene;
         public string Message;
-        public string isSystem;
+        public string IsSystem;
     }
 }

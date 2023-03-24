@@ -1,10 +1,11 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using System;
-using System.Collections.Generic;
-using System.Net.Http;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Webhooks;
+
 namespace HKMPDiscordBot
 {
     internal partial class Program
@@ -25,36 +26,19 @@ namespace HKMPDiscordBot
             Instance = this;
         }
 
-        public void callback(WebhookData w)
-        {
-            //var fileStream = new FileStream(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/godseeker.png", FileMode.Open);
-            //var image = new Image(fileStream);
-            //await _client.CurrentUser.ModifyAsync(u => u.Avatar = image);
-            try
-            {
-                if (w.isSystem != "true")
-                {
-                    SendResponseMessageToUsers(w);
-                }
-                else
-                {
-                    SendResponseMessageToAdmin(w.Message);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }
 
-        private static readonly HttpClient httpClient = new HttpClient();
+        private static WebhookClient webhookClient;
         public async Task MainAsync()
         {
-            Settings.Load();
-            HttpServer.url = $"http://*:{Settings.Instance.Port}/";
+            Settings.Initialise();
+            var url = $"http://*:{Settings.Instance.Port}/";
+            webhookClient = new WebhookClient(Settings.Instance.HkmpAddonWebhook);
+
+            var webHookServer = new WebhookServer(url, webhookCallback);
+            webHookServer.ExceptionHandler = this.webhookExceptionHandler;
             Thread thread1 = new Thread(() => {
-                try { 
-                    HttpServer.Start(callback);
+                try {
+                    webHookServer.Start();
                 } catch (Exception e)
                 {
                     Console.WriteLine(e);
@@ -62,6 +46,7 @@ namespace HKMPDiscordBot
                 }
             });
             thread1.Start();
+
             var config = new DiscordSocketConfig
             {
                 GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent
@@ -82,6 +67,42 @@ namespace HKMPDiscordBot
             await Task.Delay(-1);
         }
 
+        private void webhookExceptionHandler(HttpListenerContext ctx, Exception ex)
+        {
+            SendErrorMessageToAdmin(ex.ToString());
+        }
+
+        private void webhookCallback(HttpListenerContext ctx, Webhooks.WebhookData w)
+        {
+            if (w != null && w.UserName != null)
+            {
+                //var fileStream = new FileStream(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/godseeker.png", FileMode.Open);
+                //var image = new Image(fileStream);
+                //await _client.CurrentUser.ModifyAsync(u => u.Avatar = image);
+                try
+                {
+                    if (w.IsSystem != "true")
+                    {
+                        SendResponseMessageToUsers(w);
+                    }
+                    else
+                    {
+                        SendResponseMessageToAdmin(w.Message);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+                ctx.Respond("ok");
+            }
+            else
+            {
+                ctx.Respond("ERROR",500);
+            }
+            
+        }
+
         private Task _client_Ready()
         {
             SlashCommands.MuteUnmute(_client);
@@ -98,12 +119,12 @@ namespace HKMPDiscordBot
                     safeContent = arg.CleanContent.Substring(1);
                 }
                 Console.WriteLine($"{arg.Author.Username}:{arg.CleanContent}");
-                SendToHKMPAddon(new Dictionary<string, string>
+                SendToHKMPAddon(new WebhookData
                 {
-                    { "Username",arg.Author.Username },
-                    { "CurrentScene", arg.Channel.Name },
-                    { "Message", safeContent },
-                    { "IsSystem", "true" }
+                    UserName = arg.Author.Username,
+                    CurrentScene = arg.Channel.Name,
+                    Message = safeContent,
+                    IsSystem = "true"
                 });
             }
             if(arg.Channel.Id == Settings.Instance.ChannelId && arg.Author.Id != _client.CurrentUser.Id)
@@ -112,22 +133,18 @@ namespace HKMPDiscordBot
                 if (arg.CleanContent.StartsWith("/"))
                 {
                     safeContent = "//" +arg.CleanContent.Substring(1);
-                }
-                if (arg.CleanContent.StartsWith("\""))
+                } else if (arg.CleanContent.StartsWith("\""))
                 {
                     safeContent = "''" + arg.CleanContent.Substring(1);
-                }
-                if (arg.CleanContent.StartsWith("./list"))
+                } else if (arg.CleanContent.StartsWith("?list"))
+                {
+                    safeContent = "/list";
+                } else if (arg.CleanContent.StartsWith("./list"))
                 {
                     safeContent = arg.CleanContent.Substring(1);
                 }
                 Console.WriteLine($"{arg.Author.Username}:{arg.CleanContent}");
-                SendToHKMPAddon(new Dictionary<string, string>
-                {
-                    { "Username",arg.Author.Username },
-                    { "CurrentScene", arg.Channel.Name },
-                    { "Message", safeContent }
-                });
+                SendToHKMPAddon(new WebhookData { UserName = arg.Author.Username  , CurrentScene = arg.Channel.Name , Message = safeContent});
             }
             return Task.Delay(0);
         }

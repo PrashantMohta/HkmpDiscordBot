@@ -9,14 +9,22 @@ namespace DiscordIntegrationAddon
         public static Random random = new Random();
         public static List<string> ConnectMessages = new List<string> {
             "{player.Username} has joined.",
+            "{player.Username} joins the adventure",
             "{player.Username} has connected.",
             "This Server is graced by the pale being {player.Username}!",
             "{player.Username} has risen from the Abyss.",
             "{player.Username} has dashed their way in.",
+            "{player.Username} decided to exist",
             "{player.Username} didn't say Shaw when connecting!",
             "{player.Username} just arrived at {player.CurrentScene}!",
+            "{player.Username} crash landed onto this server",
             "{player.Username} escaped from the collector's jar!",
-            "Is it {player.Username} or is it Nosk Among us?"
+            "Is it {player.Username} or is it Nosk Among us?",
+            "{player.Username} popped in at {player.CurrentScene}",
+            "{player.Username} has come to reclaim his Shade",
+            "{player.Username} has taken a wrong turn looking for Silksong",
+            "{player.Username} was patched in by Team Cherry",
+            "{player.Username} was summoned by Jiji"
         };
 
         public static Dictionary<string,List<string>> SceneConnectMessages = new Dictionary<string, List<string>>
@@ -56,6 +64,8 @@ namespace DiscordIntegrationAddon
             {"GG_Atrium",new List<string>{
                 "{player.Username} has entered Godhome."
             }}
+            //white palace - {player.Username} has broken into the white palace
+
         };
 
         public static List<string> BotLocations = new List<string> {
