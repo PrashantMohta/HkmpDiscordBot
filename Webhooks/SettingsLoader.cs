@@ -12,6 +12,14 @@ namespace Utils
         {
             FileName = fileName;
         }
+
+        public void Save(T instance)
+        {
+            //load from file or give defaults and fail
+            var currentDirectory = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+            var filePath = Path.Combine(currentDirectory, FileName);
+            File.WriteAllText(filePath, JsonConvert.SerializeObject(instance, Formatting.Indented));
+        }
         public T Load()
         {
             //load from file or give defaults and fail

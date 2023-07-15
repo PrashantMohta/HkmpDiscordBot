@@ -89,8 +89,13 @@ namespace HKMPDiscordBot
 
         private async void webhookCallback(HttpListenerContext ctx, Webhooks.WebhookData w)
         {
+            Console.WriteLine("webhookCallback");
             if (w != null && w.UserName != null)
             {
+                if(w.CurrentScene == Constants.BOTSEEKER_LOCATION || w.CurrentScene == "")
+                {
+                    w.CurrentScene = FlavorStrings.GetBotLocationMessage();
+                }
                 //todo remember to comment this once the thingy is fixed
                 /*var fileStream = new FileStream(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/godseeker.png", FileMode.Open);
                 var image = new Image(fileStream);
@@ -112,7 +117,47 @@ namespace HKMPDiscordBot
                     }
                     else
                     {
-                        SendResponseMessageToAdmin(bot, w.Message);
+                        if (w.Message == Constants.EVENT_USER_CONNECT)
+                        {
+                            var processed = autoBan.Process(bot, w);
+                            if (processed != null)
+                            {
+                                if (!processed.IsSystem)
+                                {
+                                    SendResponseMessageToUsers(bot, processed);
+                                } else if(processed.Message != Constants.EVENT_USER_CONNECT)
+                                {
+                                    SendResponseMessageToAdmin(bot, processed.Message);
+                                }
+                            }
+                            SendResponseMessageToUsers(bot, new WebhookData
+                            {
+                                UserName = bot.BotName,
+                                CurrentScene = w.CurrentScene != "" ? BetterRoomNames.GetRoomName(w.CurrentScene) : "████████████████████",
+                                Message = FlavorStrings.GetConnectMessage(w),
+                                ServerId = bot.ServerId,
+                                IsSystem = false
+                            });
+                        } else if (w.Message == Constants.EVENT_SERVER_STARTED) {
+
+                            SendResponseMessageToUsers(bot, new WebhookData
+                            {
+                                UserName = bot.BotName,
+                                CurrentScene = FlavorStrings.GetBotLocationMessage(),
+                                Message = "I'm online! 🤖 \n Check the connected players using the `?list` command.",
+                                ServerId = bot.ServerId
+                            });
+                        } else if (w.Message == Constants.EVENT_USER_DISCONNECT) {
+                            SendResponseMessageToUsers(bot, new WebhookData
+                            {
+                                UserName = bot.BotName,
+                                CurrentScene = w.CurrentScene != "" ? BetterRoomNames.GetRoomName(w.CurrentScene) : "████████████████████",
+                                Message = FlavorStrings.GetDisconnectMessage(w),
+                                ServerId = bot.ServerId
+                            });
+                        } else {
+                            SendResponseMessageToAdmin(bot, w.Message);
+                        }
                     }
                 }
                 catch (Exception e)
@@ -150,9 +195,61 @@ namespace HKMPDiscordBot
                 if (arg.Channel.Id == botInstance.AdminChannelId && arg.Author.Id != _client.CurrentUser.Id)
                 {
                     var safeContent = arg.CleanContent;
+                    if (arg.CleanContent.StartsWith("?list"))
+                    {
+                        safeContent = "/list";
+                    }
                     if (arg.CleanContent.StartsWith("./"))
                     {
                         safeContent = arg.CleanContent.Substring(1);
+                    }
+                    if (arg.CleanContent.StartsWith("?help"))
+                    {
+                        var message = $"Commands that botseeker supports : \n\n" +
+                            $"1.General :\n" +
+                            $"```?list```\n show a list of connected users.\n" +
+                            $"```?help```\n Show this message.\n\n" +
+                            $"2.Manage Banned Phrases list :\n" +
+                            $"```?get phrases```\n get a list of all banned phrases.\n" +
+                            $"```?add phrase <phrase>```\n add a new phrase to the banned phrases.\n" +
+                            $"```?remove phrase <phrase>```\n remove a phrase from the banned phrases.\n" +
+                            $"\n";
+                        SendResponseMessageToAdmin(botInstance, $"{message}");
+                    }
+                    if (arg.CleanContent.StartsWith("?get phrases"))
+                    {
+                        var message = $"Banned Phrases list : \n ```{String.Join(",\n", BanList.Instance.phrases)}``` \n";
+                        SendResponseMessageToAdmin(botInstance, $"{message}");
+                    }
+                    if (arg.CleanContent.StartsWith("?add phrase"))
+                    {
+                        var phrase = arg.CleanContent.Replace("?add phrase", "").Trim();
+                        try
+                        {
+                            BanList.Instance.phrases.Add(phrase);
+                            BanList.Instance.Save();
+                            var message = $"Added `{phrase}` to Banned Phrases list.";
+                            SendResponseMessageToAdmin(botInstance, $"{message}");
+                        }
+                        catch (Exception e)
+                        {
+                            SendErrorMessageToAdmin(botInstance, e.Message);
+                        }
+                    }
+                    if (arg.CleanContent.StartsWith("?remove phrase"))
+                    {
+                        var phrase = arg.CleanContent.Replace("?remove phrase", "").Trim();
+                        try
+                        {
+                            BanList.Instance.phrases.Remove(phrase);
+                            BanList.Instance.Save();
+                            var message = $"Removed `{phrase}` from Banned Phrases list.";
+                            SendResponseMessageToAdmin(botInstance, $"{message}");
+                        }
+                        catch (Exception e)
+                        {
+                            SendErrorMessageToAdmin(botInstance, e.Message);
+                        }
                     }
                     Console.WriteLine($"{arg.Author.Username}:{arg.CleanContent}");
                     SendToHKMPAddon(botInstance, new WebhookData

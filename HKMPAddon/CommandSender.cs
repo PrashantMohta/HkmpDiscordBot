@@ -13,10 +13,10 @@ namespace DiscordIntegrationAddon
 
         public void SendMessage(string message)
         {
-            Server.webhookClient.Send(new WebhookData { 
-                UserName = Settings.Instance.Name,
-                CurrentScene = FlavorStrings.GetBotLocationMessage(),
+            Server.webhookClient.Send(new WebhookData
+            {
                 Message = message,
+                CurrentScene = Constants.BOTSEEKER_LOCATION,
                 IsSystem = IsSystem,
                 ServerId = Settings.Instance.ServerId
             });

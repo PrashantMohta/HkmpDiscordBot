@@ -1,8 +1,8 @@
-﻿using Hkmp.Api.Server;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Webhooks;
 
-namespace DiscordIntegrationAddon
+namespace HKMPDiscordBot
 {
     internal static class FlavorStrings
     {
@@ -77,7 +77,7 @@ namespace DiscordIntegrationAddon
         };
 
 
-        public static string GetConnectMessage(IServerPlayer player)
+        public static string GetConnectMessage(WebhookData player)
         {
             var AllValidConnectMessages = new List<string>();
             AllValidConnectMessages.AddRange(ConnectMessages);
@@ -86,13 +86,13 @@ namespace DiscordIntegrationAddon
                 AllValidConnectMessages.AddRange(sceneMessages);
             }
             var message = AllValidConnectMessages[random.Next(0, AllValidConnectMessages.Count)];
-            var playerScene = Settings.Instance.Locations ? BetterRoomNames.GetRoomName(player.CurrentScene) : "████████████████████";
-            return message.Replace("{player.CurrentScene}", playerScene).Replace("{player.Username}", player.Username);
+            var playerScene = player.CurrentScene !="" ? BetterRoomNames.GetRoomName(player.CurrentScene) : "████████████████████";
+            return message.Replace("{player.CurrentScene}", playerScene).Replace("{player.Username}", player.UserName);
         }
 
-        public static string GetDisconnectMessage(IServerPlayer player)
+        public static string GetDisconnectMessage(WebhookData player)
         {
-            return $"{player.Username} has disconnected.";
+            return $"{player.UserName} has disconnected.";
         }
         public static string GetBotLocationMessage()
         {

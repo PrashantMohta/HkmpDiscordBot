@@ -9,6 +9,7 @@
     <Import_RootNamespace>Webhooks</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SettingsLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebhookClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebhookData.cs" />

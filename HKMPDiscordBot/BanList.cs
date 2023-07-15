@@ -12,10 +12,14 @@ namespace HKMPDiscordBot
         public List<string> phrases = new List<string>();
 
         public static BanList Instance;
-
+        public static SettingsLoader<BanList> BanListLoader;
+        public void Save() { 
+            BanList.BanListLoader.Save(Instance);
+        }
         public static void Initialise()
         {
-            BanList.Instance = new SettingsLoader<BanList>("banlist.json").Load();
+            BanList.BanListLoader = new SettingsLoader<BanList>("banlist.json");
+            BanList.Instance = BanList.BanListLoader.Load();
         }
     }
 }

@@ -44,13 +44,11 @@ namespace DiscordIntegrationAddon
             //on another thread
             Thread thread1 = new Thread(webHookServer.Start);
             thread1.Start();
-
             webhookClient.Send(new WebhookData
             {
-                UserName = Settings.Instance.Name,
-                CurrentScene = FlavorStrings.GetBotLocationMessage(),
-                Message = "I'm online! 🤖 \n Check the connected players using the `?list` command.",
-                ServerId = Settings.Instance.ServerId
+                Message = Constants.EVENT_SERVER_STARTED,
+                ServerId = Settings.Instance.ServerId,
+                IsSystem = true
             });
 
             ServerApi.ServerManager.PlayerConnectEvent += ServerManager_PlayerConnectEvent;
@@ -70,7 +68,7 @@ namespace DiscordIntegrationAddon
             webhookClient.Send(new WebhookData
             {
                 UserName = player.Username,
-                CurrentScene = Settings.Instance.Locations ? BetterRoomNames.GetRoomName(player.CurrentScene) : "████████████████████",
+                CurrentScene = Settings.Instance.Locations ? player.CurrentScene : "",
                 Message = message,
                 ServerId = Settings.Instance.ServerId
             });
@@ -84,10 +82,11 @@ namespace DiscordIntegrationAddon
             }
             webhookClient.Send(new WebhookData
             {
-                UserName = Settings.Instance.Name,
-                CurrentScene = Settings.Instance.Locations ? BetterRoomNames.GetRoomName(player.CurrentScene) : "████████████████████",
-                Message = FlavorStrings.GetDisconnectMessage(player),
-                ServerId = Settings.Instance.ServerId
+                UserName = player.Username,
+                CurrentScene = Settings.Instance.Locations ? player.CurrentScene : "",
+                Message = Constants.EVENT_USER_DISCONNECT,
+                ServerId = Settings.Instance.ServerId,
+                IsSystem = true
             });
         }
 
@@ -137,10 +136,11 @@ namespace DiscordIntegrationAddon
             }
             webhookClient.Send(new WebhookData
             {
-                UserName = Settings.Instance.Name,
-                CurrentScene = Settings.Instance.Locations ? BetterRoomNames.GetRoomName(player.CurrentScene) : "████████████████████",
-                Message = FlavorStrings.GetConnectMessage(player),
-                ServerId = Settings.Instance.ServerId
+                UserName = player.Username,
+                CurrentScene = player.CurrentScene,
+                Message = Constants.EVENT_USER_CONNECT,
+                ServerId = Settings.Instance.ServerId,
+                IsSystem = true
             });
         }
 

@@ -37,7 +37,13 @@ namespace Webhooks
                 body = inputStream.ReadToEnd();
             }
             Console.WriteLine(body);
-            return JsonConvert.DeserializeObject<T>(body);
+
+            var settings = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                MissingMemberHandling = MissingMemberHandling.Ignore
+            };
+            return JsonConvert.DeserializeObject<T>(body, settings);
         }
     }
     public class WebhookServer
@@ -83,7 +89,7 @@ namespace Webhooks
                     }
                     else
                     {
-                        ctx.Respond("Error",500);
+                        ctx.Respond("Error Post Body Invalid",500);
                     }
                     
                 }

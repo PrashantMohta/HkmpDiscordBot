@@ -1,4 +1,4 @@
-﻿namespace DiscordIntegrationAddon
+﻿namespace HKMPDiscordBot
 {
 
     internal static class BetterRoomNames
