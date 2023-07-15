@@ -1,4 +1,5 @@
-﻿using Hkmp.Api.Server;
+﻿using Hkmp.Api.Eventing.ServerEvents;
+using Hkmp.Api.Server;
 using Hkmp.Logging;
 using System;
 using System.Collections.Generic;
@@ -33,14 +34,7 @@ namespace DiscordIntegrationAddon
             Settings.Initialise();
             Instance = this;
             webhookClient = new WebhookClient(Settings.Instance.DiscordBotWebhook);
-
-            //Reflection into HKMP to add our own ILogger so we can inspect the chat via it
-            //Cursed but it works.
-            Type LoggerR = typeof(IServerApi).Assembly.GetType("Hkmp.Logging.Logger");
-            var loggersList = (List<ILogger>)LoggerR.GetField("Loggers", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
-            var li = new LogInterceptor();
-            loggersList.Add(li);
-            li.OnChatMessage += Li_OnChatMessage;
+            ServerApi.ServerManager.PlayerChatEvent += ServerManager_PlayerChatEvent;
             ServerApi.CommandManager.RegisterCommand(new RedactLocations());
 
             //start webhook server
@@ -55,20 +49,57 @@ namespace DiscordIntegrationAddon
             {
                 UserName = Settings.Instance.Name,
                 CurrentScene = FlavorStrings.GetBotLocationMessage(),
-                Message = "I'm online! \n Check the connected players using the `?list` command."
+                Message = "I'm online! 🤖 \n Check the connected players using the `?list` command.",
+                ServerId = Settings.Instance.ServerId
             });
 
             ServerApi.ServerManager.PlayerConnectEvent += ServerManager_PlayerConnectEvent;
+            ServerApi.ServerManager.PlayerDisconnectEvent += ServerManager_PlayerDisconnectEvent;
+        }
+
+        private void ServerManager_PlayerChatEvent(IPlayerChatEvent chatEvent)
+        {
+            IServerPlayer player = chatEvent.Player;
+            string message = chatEvent.Message;
+            if (player == null)
+            {
+                return;
+            }
+
+            Console.WriteLine($"{player.Username} in {player.CurrentScene} says {message}");
+            webhookClient.Send(new WebhookData
+            {
+                UserName = player.Username,
+                CurrentScene = Settings.Instance.Locations ? BetterRoomNames.GetRoomName(player.CurrentScene) : "████████████████████",
+                Message = message,
+                ServerId = Settings.Instance.ServerId
+            });
+        }
+
+        private void ServerManager_PlayerDisconnectEvent(IServerPlayer player)
+        {
+            if (player == null)
+            {
+                return;
+            }
+            webhookClient.Send(new WebhookData
+            {
+                UserName = Settings.Instance.Name,
+                CurrentScene = Settings.Instance.Locations ? BetterRoomNames.GetRoomName(player.CurrentScene) : "████████████████████",
+                Message = FlavorStrings.GetDisconnectMessage(player),
+                ServerId = Settings.Instance.ServerId
+            });
         }
 
         private void webhookExceptionHandler(HttpListenerContext ctx, Exception ex)
         {
             webhookClient.Send(new WebhookData
             {
-                UserName = "ERROR",
+                UserName = "❗️ERROR❗️",
                 CurrentScene = ex.Message,
                 Message = ex.StackTrace,
-                IsSystem = true
+                IsSystem = true,
+                ServerId = Settings.Instance.ServerId
             });
         }
 
@@ -108,7 +139,8 @@ namespace DiscordIntegrationAddon
             {
                 UserName = Settings.Instance.Name,
                 CurrentScene = Settings.Instance.Locations ? BetterRoomNames.GetRoomName(player.CurrentScene) : "████████████████████",
-                Message = FlavorStrings.GetConnectMessage(player)
+                Message = FlavorStrings.GetConnectMessage(player),
+                ServerId = Settings.Instance.ServerId
             });
         }
 
@@ -128,21 +160,5 @@ namespace DiscordIntegrationAddon
             ServerApi.ServerManager.BroadcastMessage(v);
         }
 
-        private void Li_OnChatMessage(object sender, ChatEventArgs e)
-        {
-            var player = ServerApi.ServerManager.GetPlayer(e.PlayerId);
-            if (player == null)
-            {
-                return;
-            }
-
-            Console.WriteLine($"{player.Username} in {player.CurrentScene} says {e.Message}");
-            webhookClient.Send(new WebhookData
-            {
-                UserName = player.Username,
-                CurrentScene = Settings.Instance.Locations ? BetterRoomNames.GetRoomName(player.CurrentScene) : "████████████████████",
-                Message = e.Message
-            });
-        }
     }
 }

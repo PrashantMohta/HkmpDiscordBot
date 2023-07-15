@@ -89,6 +89,11 @@ namespace DiscordIntegrationAddon
             var playerScene = Settings.Instance.Locations ? BetterRoomNames.GetRoomName(player.CurrentScene) : "████████████████████";
             return message.Replace("{player.CurrentScene}", playerScene).Replace("{player.Username}", player.Username);
         }
+
+        public static string GetDisconnectMessage(IServerPlayer player)
+        {
+            return $"{player.Username} has disconnected.";
+        }
         public static string GetBotLocationMessage()
         {
             var message = BotLocations[random.Next(0, BotLocations.Count)];

@@ -9,10 +9,16 @@ namespace HKMPDiscordBot
 {
     internal class SlashCommands
     {
-        public static async void MuteUnmute(DiscordSocketClient client)
+        private BotInstance bot;
+
+        public SlashCommands(BotInstance bot)
+        {
+            this.bot = bot;
+        }
+        public async void MuteUnmute(DiscordSocketClient client)
         {
             // Let's build a guild command! We're going to need a guild so lets just put that in a variable.
-            var guild = client.GetGuild(Settings.Instance.GuildId);
+            var guild = client.GetGuild(this.bot.GuildId);
             if (guild == null)
             {
                 return;
@@ -43,10 +49,10 @@ namespace HKMPDiscordBot
             client.SlashCommandExecuted += SlashCommandHandler;
         }
 
-        private static Task SlashCommandHandler(SocketSlashCommand command)
+        private Task SlashCommandHandler(SocketSlashCommand command)
         {
-            Settings.Instance.IsMuted = !Settings.Instance.IsMuted;
-            Program.Instance.SendResponseMessageToAdmin(Settings.Instance.IsMuted ? "Muted" : "Unmuted");
+            this.bot.IsMuted = !this.bot.IsMuted;
+            Program.Instance.SendResponseMessageToAdmin(this.bot,this.bot.IsMuted ? "Muted" : "Unmuted");
             return command.RespondAsync($"You executed {command.Data.Name}");
         }
     }

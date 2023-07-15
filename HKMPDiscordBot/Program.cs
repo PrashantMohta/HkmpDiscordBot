@@ -13,8 +13,8 @@ namespace HKMPDiscordBot
     internal partial class Program
     {
         public static Program Instance;
+        public static AutoBan autoBan = new AutoBan();
         private DiscordSocketClient _client;
-        private IMessageChannel channel,adminChannel;
 
         public static Task Main(string[] args) => new Program().MainAsync();
         private Task Log(LogMessage msg)
@@ -26,16 +26,22 @@ namespace HKMPDiscordBot
         public Program()
         {
             Instance = this;
+            Settings.Initialise();
+            BanList.Initialise();
         }
 
-
-        private static WebhookClient webhookClient;
         public async Task MainAsync()
         {
-            Settings.Initialise();
             var url = $"http://{Settings.Instance.HostName}:{Settings.Instance.Port}/";
-            webhookClient = new WebhookClient(Settings.Instance.HkmpAddonWebhook);
+            if (Settings.Instance != null)
+            {
 
+                Console.WriteLine(Settings.Instance.ToString());
+            }
+            foreach (var item in Settings.Instance.bots)
+            {
+                item.webhookClient = new WebhookClient(item.HkmpAddonWebhook);
+            }
             var webHookServer = new WebhookServer(url, webhookCallback);
             webHookServer.ExceptionHandler = this.webhookExceptionHandler;
             Thread thread1 = new Thread(() => {
@@ -44,7 +50,10 @@ namespace HKMPDiscordBot
                 } catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    SendErrorMessageToAdmin(e.ToString());
+                    foreach(var item in Settings.Instance.bots)
+                    {
+                        SendErrorMessageToAdmin(item,e.ToString());
+                    }
                 }
             });
             thread1.Start();
@@ -71,7 +80,11 @@ namespace HKMPDiscordBot
 
         private void webhookExceptionHandler(HttpListenerContext ctx, Exception ex)
         {
-            SendErrorMessageToAdmin(ex.ToString());
+
+            foreach (var item in Settings.Instance.bots)
+            {
+                SendErrorMessageToAdmin(item, ex.ToString());
+            }
         }
 
         private async void webhookCallback(HttpListenerContext ctx, Webhooks.WebhookData w)
@@ -87,16 +100,19 @@ namespace HKMPDiscordBot
                 });
                 fileStream.Dispose();*/
 
-
+                var bot = Settings.Instance.GetBotInstanceByServerId(w.ServerId);
                 try
                 {
                     if (!w.IsSystem)
                     {
-                        SendResponseMessageToUsers(w);
+                        var processed = autoBan.Process(bot,w);
+                        if(processed != null) { 
+                            SendResponseMessageToUsers(bot, processed);
+                        }
                     }
                     else
                     {
-                        SendResponseMessageToAdmin(w.Message);
+                        SendResponseMessageToAdmin(bot, w.Message);
                     }
                 }
                 catch (Exception e)
@@ -114,46 +130,65 @@ namespace HKMPDiscordBot
 
         private Task _client_Ready()
         {
-            SlashCommands.MuteUnmute(_client);
+            foreach (var item in Settings.Instance.bots)
+            {
+                if(item.slashCommands == null) { 
+                    item.slashCommands = new SlashCommands(item);
+                }
+                item.slashCommands.MuteUnmute(_client);
+            }
             return Task.CompletedTask;
         }
 
         private Task _client_MessageReceived(SocketMessage arg)
         {
-            if(arg.Channel.Id == Settings.Instance.AdminChannelId && arg.Author.Id != _client.CurrentUser.Id)
+            var botInstance = Settings.Instance.GetBotInstanceByChannelId(arg.Channel.Id);
+            if(botInstance == null)
             {
-                var safeContent = arg.CleanContent;
-                if (arg.CleanContent.StartsWith("./"))
+                return Task.Delay(0);
+            } else { 
+                if (arg.Channel.Id == botInstance.AdminChannelId && arg.Author.Id != _client.CurrentUser.Id)
                 {
-                    safeContent = arg.CleanContent.Substring(1);
+                    var safeContent = arg.CleanContent;
+                    if (arg.CleanContent.StartsWith("./"))
+                    {
+                        safeContent = arg.CleanContent.Substring(1);
+                    }
+                    Console.WriteLine($"{arg.Author.Username}:{arg.CleanContent}");
+                    SendToHKMPAddon(botInstance, new WebhookData
+                    {
+                        UserName = arg.Author.Username,
+                        CurrentScene = arg.Channel.Name,
+                        Message = safeContent,
+                        IsSystem = true,
+                        ServerId = botInstance.ServerId
+                    });
                 }
-                Console.WriteLine($"{arg.Author.Username}:{arg.CleanContent}");
-                SendToHKMPAddon(new WebhookData
+                if(arg.Channel.Id == botInstance.ChannelId && arg.Author.Id != _client.CurrentUser.Id)
                 {
-                    UserName = arg.Author.Username,
-                    CurrentScene = arg.Channel.Name,
-                    Message = safeContent,
-                    IsSystem = true
-                });
-            }
-            if(arg.Channel.Id == Settings.Instance.ChannelId && arg.Author.Id != _client.CurrentUser.Id)
-            {
-                var safeContent = arg.CleanContent;
-                if (arg.CleanContent.StartsWith("/"))
-                {
-                    safeContent = "//" +arg.CleanContent.Substring(1);
-                } else if (arg.CleanContent.StartsWith("\""))
-                {
-                    safeContent = "''" + arg.CleanContent.Substring(1);
-                } else if (arg.CleanContent.StartsWith("?list"))
-                {
-                    safeContent = "/list";
-                } else if (arg.CleanContent.StartsWith("./list"))
-                {
-                    safeContent = arg.CleanContent.Substring(1);
+                    var safeContent = arg.CleanContent;
+                    if (arg.CleanContent.StartsWith("/"))
+                    {
+                        safeContent = "//" +arg.CleanContent.Substring(1);
+                    } else if (arg.CleanContent.StartsWith("\""))
+                    {
+                        safeContent = "''" + arg.CleanContent.Substring(1);
+                    } else if (arg.CleanContent.StartsWith("?list"))
+                    {
+                        safeContent = "/list";
+                    } else if (arg.CleanContent.StartsWith("./list"))
+                    {
+                        safeContent = arg.CleanContent.Substring(1);
+                    }
+                    Console.WriteLine($"{arg.Author.Username}:{arg.CleanContent}");
+                    SendToHKMPAddon(botInstance, new WebhookData {
+                        UserName = arg.Author.Username  ,
+                        CurrentScene = arg.Channel.Name ,
+                        Message = safeContent,
+                        ServerId = botInstance.ServerId
+                        }
+                    );
                 }
-                Console.WriteLine($"{arg.Author.Username}:{arg.CleanContent}");
-                SendToHKMPAddon(new WebhookData { UserName = arg.Author.Username  , CurrentScene = arg.Channel.Name , Message = safeContent});
             }
             return Task.Delay(0);
         }

@@ -20,12 +20,20 @@ namespace Utils
             T instance = new T();
             try
             {
-                instance = JsonConvert.DeserializeObject<T>(File.ReadAllText(filePath));
-                File.WriteAllText(filePath, JsonConvert.SerializeObject(instance));
+                T newinstance = JsonConvert.DeserializeObject<T>(File.ReadAllText(filePath), 
+                    new JsonSerializerSettings{
+                        ObjectCreationHandling = ObjectCreationHandling.Replace
+                    }
+                );
+                if(newinstance != null)
+                {
+                    instance = newinstance;
+                }
+                File.WriteAllText(filePath, JsonConvert.SerializeObject(instance, Formatting.Indented));
             }
             catch
             {
-                File.WriteAllText(filePath, JsonConvert.SerializeObject(instance));
+                File.WriteAllText(filePath, JsonConvert.SerializeObject(instance,Formatting.Indented));
             }
             return instance;
         }
