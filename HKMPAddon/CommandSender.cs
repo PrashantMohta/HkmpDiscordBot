@@ -10,16 +10,18 @@ namespace DiscordIntegrationAddon
         public CommandSenderType Type => CommandSenderType.Console;
 
         public bool IsSystem = true;
-
+        public bool IsSilent = false;
         public void SendMessage(string message)
         {
-            Server.webhookClient.Send(new WebhookData
-            {
-                Message = message,
-                CurrentScene = Constants.BOTSEEKER_LOCATION,
-                IsSystem = IsSystem,
-                ServerId = Settings.Instance.ServerId
-            });
+            if (!IsSilent) { 
+                Server.webhookClient.Send(new WebhookData
+                {
+                    Message = message,
+                    CurrentScene = Constants.BOTSEEKER_LOCATION,
+                    IsSystem = IsSystem,
+                    ServerId = Settings.Instance.ServerId
+                });
+            }
         }
     }
 }

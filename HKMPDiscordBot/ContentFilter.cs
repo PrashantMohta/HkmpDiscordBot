@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Webhooks;
 
@@ -18,17 +19,17 @@ namespace HKMPDiscordBot
             isUsername = false;
             foreach (var phrase in BanList.Instance.phrases)
             {
-                if (username.Contains(phrase))
+                if (Regex.Match(username, phrase, RegexOptions.IgnoreCase).Success)
                 {
                     isUsername = true;
                     offendingPhrase = phrase;
-                    return username.Contains(phrase);
+                    return true;
 
                 }
-                if (message.Contains(phrase))
+                if (Regex.Match(message, phrase, RegexOptions.IgnoreCase).Success)
                 {
                     offendingPhrase = phrase;
-                    return message.Contains(phrase);
+                    return true;
                 }
             }
             offendingPhrase = "";
@@ -45,11 +46,13 @@ namespace HKMPDiscordBot
             string location = "The Abyss";
             if (this.shouldFilter(username, message, out isUsername , out phrase))
             {
-                if (isUsername) {
+                if (isUsername)
+                {
                     penaltyCommand = "kick";
                     location = "The Howling Cliffs";
                     Program.Instance.SendResponseMessageToAdmin(bot, $"✨ {remark} ✨\n Banishing vessel `{w.UserName}`  into the Howling Cliffs.\n for use of phrase `{phrase}` in username : \n || {username} ||");
-                } else
+                }
+                else
                 {
                     remark = "No voice to cry suffering";
                     Program.Instance.SendResponseMessageToAdmin(bot, $"✨ {remark} ✨\n Banishing vessel `{w.UserName}`  into the Abyss.\n for use of phrase `{phrase}` in message : \n || {message} ||");

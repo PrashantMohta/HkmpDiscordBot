@@ -95,6 +95,9 @@ namespace HKMPDiscordBot
                 if(w.CurrentScene == Constants.BOTSEEKER_LOCATION || w.CurrentScene == "")
                 {
                     w.CurrentScene = FlavorStrings.GetBotLocationMessage();
+                } else
+                {
+                    w.CurrentScene = BetterRoomNames.GetRoomName(w.CurrentScene);
                 }
                 //todo remember to comment this once the thingy is fixed
                 /*var fileStream = new FileStream(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/godseeker.png", FileMode.Open);
@@ -188,44 +191,55 @@ namespace HKMPDiscordBot
         private Task _client_MessageReceived(SocketMessage arg)
         {
             var botInstance = Settings.Instance.GetBotInstanceByChannelId(arg.Channel.Id);
-            if(botInstance == null)
+            var content = arg.Content;
+            if (botInstance == null)
             {
                 return Task.Delay(0);
             } else { 
                 if (arg.Channel.Id == botInstance.AdminChannelId && arg.Author.Id != _client.CurrentUser.Id)
                 {
-                    var safeContent = arg.CleanContent;
-                    if (arg.CleanContent.StartsWith("?list"))
+                    var safeContent = content;
+                    if (content.StartsWith("?list"))
                     {
                         safeContent = "/list";
                     }
-                    if (arg.CleanContent.StartsWith("./"))
+                    if (content.StartsWith("./"))
                     {
-                        safeContent = arg.CleanContent.Substring(1);
+                        safeContent = content.Substring(1);
                     }
-                    if (arg.CleanContent.StartsWith("?help"))
+                    if (content.StartsWith("?help"))
                     {
                         var message = $"Commands that botseeker supports : \n\n" +
                             $"1.General :\n" +
-                            $"```?list```\n show a list of connected users.\n" +
                             $"```?help```\n Show this message.\n\n" +
+                            $"```?list```\n show a list of connected users.\n" +
+                            $"```?player (authkey|ip) <username>```\n get the player's (authkey|ip).\n" +
                             $"2.Manage Banned Phrases list :\n" +
                             $"```?get phrases```\n get a list of all banned phrases.\n" +
                             $"```?add phrase <phrase>```\n add a new phrase to the banned phrases.\n" +
                             $"```?remove phrase <phrase>```\n remove a phrase from the banned phrases.\n" +
-                            $"\n";
+                            $"3. Hkmp commands can be used by adding a `.` at the begining.\n" +
+                            $" for example ```./unban <authKey>``` will unban a user.\n";
                         SendResponseMessageToAdmin(botInstance, $"{message}");
                     }
-                    if (arg.CleanContent.StartsWith("?get phrases"))
+                    if (content.StartsWith("?player"))
+                    {
+                        safeContent = content.Replace("?player","/player");
+                    }
+                    if (content.StartsWith("?get phrases"))
                     {
                         var message = $"Banned Phrases list : \n ```{String.Join(",\n", BanList.Instance.phrases)}``` \n";
                         SendResponseMessageToAdmin(botInstance, $"{message}");
                     }
-                    if (arg.CleanContent.StartsWith("?add phrase"))
+                    if (content.StartsWith("?add phrase"))
                     {
-                        var phrase = arg.CleanContent.Replace("?add phrase", "").Trim();
+                        var phrase = content.Replace("?add phrase", "").Trim();
                         try
-                        {
+                        { 
+                            if(BanList.Instance.phrases.Contains(phrase))
+                            {
+                                throw new Exception($"Banlist Already contains the phrase `{phrase}`");
+                            }
                             BanList.Instance.phrases.Add(phrase);
                             BanList.Instance.Save();
                             var message = $"Added `{phrase}` to Banned Phrases list.";
@@ -236,9 +250,9 @@ namespace HKMPDiscordBot
                             SendErrorMessageToAdmin(botInstance, e.Message);
                         }
                     }
-                    if (arg.CleanContent.StartsWith("?remove phrase"))
+                    if (content.StartsWith("?remove phrase"))
                     {
-                        var phrase = arg.CleanContent.Replace("?remove phrase", "").Trim();
+                        var phrase = content.Replace("?remove phrase", "").Trim();
                         try
                         {
                             BanList.Instance.phrases.Remove(phrase);
@@ -251,7 +265,7 @@ namespace HKMPDiscordBot
                             SendErrorMessageToAdmin(botInstance, e.Message);
                         }
                     }
-                    Console.WriteLine($"{arg.Author.Username}:{arg.CleanContent}");
+                    Console.WriteLine($"{arg.Author.Username}:{content}");
                     SendToHKMPAddon(botInstance, new WebhookData
                     {
                         UserName = arg.Author.Username,
@@ -263,21 +277,21 @@ namespace HKMPDiscordBot
                 }
                 if(arg.Channel.Id == botInstance.ChannelId && arg.Author.Id != _client.CurrentUser.Id)
                 {
-                    var safeContent = arg.CleanContent;
-                    if (arg.CleanContent.StartsWith("/"))
+                    var safeContent = content;
+                    if (content.StartsWith("/"))
                     {
-                        safeContent = "//" +arg.CleanContent.Substring(1);
-                    } else if (arg.CleanContent.StartsWith("\""))
+                        safeContent = "//" +content.Substring(1);
+                    } else if (content.StartsWith("\""))
                     {
-                        safeContent = "''" + arg.CleanContent.Substring(1);
-                    } else if (arg.CleanContent.StartsWith("?list"))
+                        safeContent = "''" + content.Substring(1);
+                    } else if (content.StartsWith("?list"))
                     {
                         safeContent = "/list";
-                    } else if (arg.CleanContent.StartsWith("./list"))
+                    } else if (content.StartsWith("./list"))
                     {
-                        safeContent = arg.CleanContent.Substring(1);
+                        safeContent = content.Substring(1);
                     }
-                    Console.WriteLine($"{arg.Author.Username}:{arg.CleanContent}");
+                    Console.WriteLine($"{arg.Author.Username}:{content}");
                     SendToHKMPAddon(botInstance, new WebhookData {
                         UserName = arg.Author.Username  ,
                         CurrentScene = arg.Channel.Name ,

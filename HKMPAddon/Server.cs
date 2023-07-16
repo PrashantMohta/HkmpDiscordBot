@@ -24,19 +24,34 @@ namespace DiscordIntegrationAddon
 
         internal static CommandSender commandSender = new CommandSender();
 
+        public IServerApi serverApi { get; private set; }
         public Server()
         {
             Instance = this;
+        }
+
+        public IServerPlayer GetPlayer(string username)
+        {
+            foreach (var player in ServerApi.ServerManager.Players)
+            {
+                if (player.Username == username)
+                {
+                    return player;
+                }
+            }
+            return null;
         }
 
         public override void Initialize(IServerApi serverApi)
         {
             Settings.Initialise();
             Instance = this;
+            this.serverApi = serverApi;
             webhookClient = new WebhookClient(Settings.Instance.DiscordBotWebhook);
             ServerApi.ServerManager.PlayerChatEvent += ServerManager_PlayerChatEvent;
             ServerApi.CommandManager.RegisterCommand(new RedactLocations());
-
+            ServerApi.CommandManager.RegisterCommand(new GetPlayer());
+            ServerApi.CommandManager.RegisterCommand(new ReportPlayer());
             //start webhook server
             var url = $"http://{Settings.Instance.HostName}:{Settings.Instance.Port}/";
             var webHookServer = new WebhookServer(url,webhookCallback);
@@ -106,6 +121,18 @@ namespace DiscordIntegrationAddon
         {
             if (data != null && data.UserName != null)
             {
+
+                if(data.Message.StartsWith("/ban"))
+                {
+                    var report = data.Message.Replace("/ban","/report");
+                    Server.Instance.TryRunCommand(report, data.IsSystem,true);
+                }
+                if (data.Message.StartsWith("/kick"))
+                {
+                    var report = data.Message.Replace("/kick", "/report");
+                    Server.Instance.TryRunCommand(report, data.IsSystem, true);
+                }
+
                 Server.Instance.TryRunCommand(data.Message, data.IsSystem);
                 if (!data.IsSystem)
                 {
@@ -145,9 +172,10 @@ namespace DiscordIntegrationAddon
         }
 
 
-        internal bool TryRunCommand(string message,bool isSystem)
+        internal bool TryRunCommand(string message,bool isSystem, bool isSilent = false)
         {
             commandSender.IsSystem = isSystem;
+            commandSender.IsSilent = isSilent;
             //Reflection into HKMP to run the command
             Type ServerCommandManagerR = typeof(IServerApi).Assembly.GetType("Hkmp.Game.Command.Server.ServerCommandManager");
             object[] parametersArray = new object[] { commandSender, message };
