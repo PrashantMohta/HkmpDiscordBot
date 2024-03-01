@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
@@ -8,7 +9,11 @@ public class BanListItem
 }
 public class BanList
 {
+    //[JsonProperty("Phrases")]
+
     private List<BanListItem> _phrases;
+
+    //[JsonIgnore]
     public List<BanListItem> Phrases
     {
         get

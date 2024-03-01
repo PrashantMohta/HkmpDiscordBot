@@ -28,8 +28,9 @@ namespace DiscordIntegrationAddon
 
         public static async void LoadBanList()
         {
-            var response = await Server.webhookClient.Request("banlist/get");
+            var response = await Server.webhookClient.Request("banlist"); // this was it!
             var contents = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(contents);
             try { 
                 var res = JsonConvert.DeserializeObject<BanList>(contents, new JsonSerializerSettings
                 {

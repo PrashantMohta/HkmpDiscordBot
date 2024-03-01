@@ -27,7 +27,7 @@ namespace HKMPDiscordBot
             var embed = new EmbedBuilder()
                 .WithColor(new Color(50, 0, 0))
                 .WithAuthor($"{bot.BotName} Says")
-                .WithDescription(error);
+                .WithDescription(error.Replace("*", "\\*"));
             try
             {
                 if (bot.adminChannel == null)
@@ -46,7 +46,7 @@ namespace HKMPDiscordBot
             var embed = new EmbedBuilder()
                 .WithColor(new Color(0, 0, 0))
                 .WithAuthor($"{bot.BotName} Says")
-                .WithDescription(message);
+                .WithDescription(message.Replace("*","\\*"));
 
             try
             {
@@ -69,7 +69,7 @@ namespace HKMPDiscordBot
             var embed = new EmbedBuilder()
                 .WithColor(new Color(0, 0, 0))
                 .WithAuthor($"{w.UserName} Says")
-                .WithDescription(w.Message)
+                .WithDescription(w.Message.Replace("*", "\\*"))
                 .WithFooter($"From {w.CurrentScene}");
             try {
                 if (bot.mainChannel == null)
