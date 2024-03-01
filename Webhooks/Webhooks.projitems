@@ -14,5 +14,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)WebhookClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebhookData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebhookServer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BanList.cs" />
   </ItemGroup>
 </Project>

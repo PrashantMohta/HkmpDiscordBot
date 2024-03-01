@@ -13,7 +13,6 @@ namespace HKMPDiscordBot
     internal partial class Program
     {
         public static Program Instance;
-        public static AutoBan autoBan = new AutoBan();
         private DiscordSocketClient _client;
 
         public static Task Main(string[] args) => new Program().MainAsync();
@@ -27,7 +26,7 @@ namespace HKMPDiscordBot
         {
             Instance = this;
             Settings.Initialise();
-            BanList.Initialise();
+            BanListSettings.Initialise();
         }
 
         public async Task MainAsync()
@@ -89,8 +88,13 @@ namespace HKMPDiscordBot
 
         private async void webhookCallback(HttpListenerContext ctx, Webhooks.WebhookData w)
         {
-            Console.WriteLine("webhookCallback");
-            if (w != null && w.UserName != null)
+            Console.WriteLine($"webhookCallback {ctx.Request.Url.AbsolutePath}");
+            if(ctx.Request.HttpMethod == "GET" && ctx.Request.Url.AbsolutePath == "/banlist")
+            {
+               var response = BanListSettings.BanListLoader.GetString(BanListSettings.Instance.BanList);
+                ctx.Respond(response,200);
+            } 
+            else if (w != null && w.UserName != null)
             {
                 if(w.CurrentScene == Constants.BOTSEEKER_LOCATION || w.CurrentScene == "")
                 {
@@ -113,25 +117,19 @@ namespace HKMPDiscordBot
                 {
                     if (!w.IsSystem)
                     {
-                        var processed = autoBan.Process(bot,w);
-                        if(processed != null) { 
-                            SendResponseMessageToUsers(bot, processed);
-                        }
+                        SendResponseMessageToUsers(bot, w);
                     }
                     else
                     {
                         if (w.Message == Constants.EVENT_USER_CONNECT)
                         {
-                            var processed = autoBan.Process(bot, w);
-                            if (processed != null)
+                            if (!w.IsSystem)
                             {
-                                if (!processed.IsSystem)
-                                {
-                                    SendResponseMessageToUsers(bot, processed);
-                                } else if(processed.Message != Constants.EVENT_USER_CONNECT)
-                                {
-                                    SendResponseMessageToAdmin(bot, processed.Message);
-                                }
+                                SendResponseMessageToUsers(bot, w);
+                            }
+                            else if (w.Message != Constants.EVENT_USER_CONNECT)
+                            {
+                                SendResponseMessageToAdmin(bot, w.Message);
                             }
                             SendResponseMessageToUsers(bot, new WebhookData
                             {
@@ -228,7 +226,7 @@ namespace HKMPDiscordBot
                     }
                     if (content.StartsWith("?get phrases"))
                     {
-                        var message = $"Banned Phrases list : \n ```{String.Join(",\n", BanList.Instance.phrases)}``` \n";
+                        var message = $"Banned Phrases list : \n ```{BanListSettings.Instance.BanList.ListPhrases()}``` \n";
                         SendResponseMessageToAdmin(botInstance, $"{message}");
                     }
                     if (content.StartsWith("?add phrase"))
@@ -236,14 +234,61 @@ namespace HKMPDiscordBot
                         var phrase = content.Replace("?add phrase", "").Trim();
                         try
                         { 
-                            if(BanList.Instance.phrases.Contains(phrase))
+                            if(BanListSettings.Instance.BanList.Contains(phrase))
                             {
                                 throw new Exception($"Banlist Already contains the phrase `{phrase}`");
                             }
-                            BanList.Instance.phrases.Add(phrase);
-                            BanList.Instance.Save();
+                            BanListSettings.Instance.BanList.Add(phrase,false);
+                            BanListSettings.Instance.Save();
                             var message = $"Added `{phrase}` to Banned Phrases list.";
                             SendResponseMessageToAdmin(botInstance, $"{message}");
+                        }
+                        catch (Exception e)
+                        {
+                            SendErrorMessageToAdmin(botInstance, e.Message);
+                        }
+                    }
+                    if (content.StartsWith("?hardban phrase"))
+                    {
+                        var phrase = content.Replace("?hardban phrase", "").Trim();
+                        try
+                        {
+                            var foundPhrase = BanListSettings.Instance.BanList.Find(phrase);
+                            if (foundPhrase != null)
+                            {
+                                foundPhrase.IsHardFilter = true;
+                                BanListSettings.Instance.Save();
+                                var message = $"Added `{phrase}` to Hard Banned Phrases list.";
+                                SendResponseMessageToAdmin(botInstance, $"{message}");
+                            } else
+                            {
+                                throw new Exception($"Banlist does not contain the phrase `{phrase}`");
+                            }
+                           
+                        }
+                        catch (Exception e)
+                        {
+                            SendErrorMessageToAdmin(botInstance, e.Message);
+                        }
+                    }
+                    if (content.StartsWith("?softban phrase"))
+                    {
+                        var phrase = content.Replace("?softban phrase", "").Trim();
+                        try
+                        {
+                            var foundPhrase = BanListSettings.Instance.BanList.Find(phrase);
+                            if (foundPhrase != null)
+                            {
+                                foundPhrase.IsHardFilter = false;
+                                BanListSettings.Instance.Save();
+                                var message = $"Added `{phrase}` to Soft Banned Phrases list.";
+                                SendResponseMessageToAdmin(botInstance, $"{message}");
+                            }
+                            else
+                            {
+                                throw new Exception($"Banlist does not contain the phrase `{phrase}`");
+                            }
+
                         }
                         catch (Exception e)
                         {
@@ -255,8 +300,8 @@ namespace HKMPDiscordBot
                         var phrase = content.Replace("?remove phrase", "").Trim();
                         try
                         {
-                            BanList.Instance.phrases.Remove(phrase);
-                            BanList.Instance.Save();
+                            BanListSettings.Instance.BanList.Remove(phrase);
+                            BanListSettings.Instance.Save();
                             var message = $"Removed `{phrase}` from Banned Phrases list.";
                             SendResponseMessageToAdmin(botInstance, $"{message}");
                         }

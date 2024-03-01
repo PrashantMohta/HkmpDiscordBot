@@ -58,11 +58,15 @@
 	<Reference Include="Hkmp">
 		<HintPath>$(HollowKnightRefs)/Mods/HKMP/HKMP.dll</HintPath>
 	</Reference>
+	<Reference Include="System.Net" />
 	<Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include="ReadMe.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="8.0.2" />
   </ItemGroup>
   <Import Project="..\Webhooks\Webhooks.projitems" Label="Shared" />
 </Project>

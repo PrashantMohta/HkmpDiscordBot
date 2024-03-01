@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Webhooks
 {
@@ -28,6 +29,11 @@ namespace Webhooks
         public void Send(WebhookData data)
         {
             httpClient.Send(url, data);
+        }
+
+        public Task<HttpResponseMessage> Request(string endpoint)
+        {
+            return httpClient.GetAsync(url+endpoint);
         }
     }
 }

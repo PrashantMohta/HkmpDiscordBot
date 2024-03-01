@@ -78,15 +78,36 @@ namespace DiscordIntegrationAddon
             {
                 return;
             }
-
             Console.WriteLine($"{player.Username} in {player.CurrentScene} says {message}");
-            webhookClient.Send(new WebhookData
+
+            if (ContentFilter.CheckFilter(message, out var offendingPhrase,out var censoredPhrase, out var isHardFilter))
             {
-                UserName = player.Username,
-                CurrentScene = Settings.Instance.Locations ? player.CurrentScene : "",
-                Message = message,
-                ServerId = Settings.Instance.ServerId
-            });
+                chatEvent.Message = censoredPhrase;
+                if (isHardFilter)
+                {
+                    ReportAndBanPlayer(player.AuthKey);
+                    webhookClient.Send(new WebhookData
+                    {
+                        UserName = player.Username,
+                        CurrentScene = "The Abyss",
+                        Message = $"✨ No voice to cry suffering ✨\n Banishing vessel `{player.Username}`  into the Abyss.\n for use of phrase `{offendingPhrase}` in message : \n || {message} ||",
+                        IsSystem = true,
+                        ServerId = Settings.Instance.ServerId
+                    });
+                    chatEvent.Cancelled = true;
+                }
+            }
+            if (!chatEvent.Cancelled)
+            {
+                webhookClient.Send(new WebhookData
+                {
+                    UserName = player.Username,
+                    CurrentScene = Settings.Instance.Locations ? player.CurrentScene : "",
+                    Message = chatEvent.Message,
+                    ServerId = Settings.Instance.ServerId
+                });
+            }
+  
         }
 
         private void ServerManager_PlayerDisconnectEvent(IServerPlayer player)
@@ -169,9 +190,31 @@ namespace DiscordIntegrationAddon
                 ServerId = Settings.Instance.ServerId,
                 IsSystem = true
             });
+            if (ContentFilter.CheckFilter(player.Username, out var offendingPhrase, out var censoredPhrase, out var isHardFilter))
+            {
+                KickPlayer(player.AuthKey);
+                webhookClient.Send(new WebhookData
+                {
+                    UserName = player.Username,
+                    CurrentScene = "The Abyss",
+                    Message = $"✨ No mind to think ✨\n Banishing vessel `{player.Username}`  into the Howling Cliffs.\n for use of phrase `{offendingPhrase}` in username : \n || {player.Username} ||",
+                    IsSystem = true,
+                    ServerId = Settings.Instance.ServerId
+                });
+            }
         }
 
 
+        private void ReportAndBanPlayer(string authKey)
+        {
+            Server.Instance.TryRunCommand($"/report {authKey}", true, false);
+            Server.Instance.TryRunCommand($"/ban {authKey}", true, false);
+        }
+
+        private void KickPlayer(string authKey)
+        {
+            Server.Instance.TryRunCommand($"/kick {authKey}", true, false);
+        }
         internal bool TryRunCommand(string message,bool isSystem, bool isSilent = false)
         {
             commandSender.IsSystem = isSystem;

@@ -74,22 +74,26 @@ namespace Webhooks
                 // Peel out the requests and response objects
                 HttpListenerRequest req = ctx.Request;
                 HttpListenerResponse resp = ctx.Response;
-                try
-                {
+                try {
                     Console.WriteLine(req.RemoteEndPoint);
-                    if (req.HttpMethod != "POST" )
+                    if (req.HttpMethod == "POST")
+                    {
+                        WebhookData data = ctx.GetBody<WebhookData>();
+                        if (data != null)
+                        {
+                            Callback(ctx, data);
+                        }
+                        else
+                        {
+                            ctx.Respond("Error Post Body Invalid", 500);
+                        }
+                    } else if (req.HttpMethod == "GET")
+                    {
+                        Callback(ctx, null);
+                    } else
                     {
                         ctx.Respond("Not Allowed", 405);
                         continue;
-                    }
-                    WebhookData data = ctx.GetBody<WebhookData>();
-                    if(data != null)
-                    {
-                        Callback(ctx, data);
-                    }
-                    else
-                    {
-                        ctx.Respond("Error Post Body Invalid",500);
                     }
                     
                 }
