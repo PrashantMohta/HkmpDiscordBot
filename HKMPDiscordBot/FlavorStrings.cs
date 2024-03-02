@@ -6,8 +6,9 @@ namespace HKMPDiscordBot
 {
     internal static class FlavorStrings
     {
-        public static Random random = new Random();
-        public static List<string> ConnectMessages = new List<string> {
+        public static Random random = new();
+        public static List<string> ConnectMessages = new()
+        {
             "{player.Username} has joined.",
             "{player.Username} joins the adventure",
             "{player.Username} has connected.",
@@ -27,7 +28,7 @@ namespace HKMPDiscordBot
             "{player.Username} was summoned by Jiji"
         };
 
-        public static Dictionary<string,List<string>> SceneConnectMessages = new Dictionary<string, List<string>>
+        public static Dictionary<string,List<string>> SceneConnectMessages = new()
         {
             {"Town",new List<string>{
                 "{player.Username} might just settle down in Dirtmouth."
@@ -68,7 +69,8 @@ namespace HKMPDiscordBot
 
         };
 
-        public static List<string> BotLocations = new List<string> {
+        public static List<string> BotLocations = new()
+        {
             "The WaterWastes",
             "The BotHome",
             "The Hive",

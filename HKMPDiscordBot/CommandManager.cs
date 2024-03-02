@@ -17,10 +17,10 @@ namespace HKMPDiscordBot
     }
     public static class CommandManager
     {
-        private static Dictionary<string,Command> RegisteredCommands = new Dictionary<string, Command>();
+        private static Dictionary<string,Command> RegisteredCommands = new();
         public static List<string> ParseCommand(string commandString)
         {
-            List<string> args = new List<string>();
+            List<string> args = new();
             var buffer = "";
             var waitFor = ' ';
             for (int i = 0; i < commandString.Length; i++)
@@ -81,7 +81,7 @@ namespace HKMPDiscordBot
         public static string ListCommands()
         {
             var outstr = "";
-            Dictionary<Command, bool> done = new Dictionary<Command, bool>();
+            Dictionary<Command, bool> done = new();
             foreach(var cmd in RegisteredCommands.Values) { 
                 if(!done.ContainsKey(cmd))
                 {
@@ -94,7 +94,8 @@ namespace HKMPDiscordBot
 
         internal static void Initialise()
         {
-            List<Command> cmds = new List<Command> {
+            List<Command> cmds = new()
+            {
                 new ListCommand(),
                 new HelpCommand(),
                 new GetPlayerCommand(),

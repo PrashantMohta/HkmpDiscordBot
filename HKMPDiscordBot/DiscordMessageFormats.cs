@@ -30,10 +30,7 @@ namespace HKMPDiscordBot
                 .WithDescription(error.Replace("*", "\\*"));
             try
             {
-                if (bot.adminChannel == null)
-                {
-                    bot.adminChannel = await _client.GetChannelAsync(bot.AdminChannelId) as IMessageChannel;
-                }
+                bot.adminChannel ??= await _client.GetChannelAsync(bot.AdminChannelId) as IMessageChannel;
                 await bot.adminChannel!.SendMessageAsync(null, false, embed.WithCurrentTimestamp().Build());
             }
             catch (Exception ex)
@@ -50,10 +47,7 @@ namespace HKMPDiscordBot
 
             try
             {
-                if (bot.adminChannel == null)
-                {
-                    bot.adminChannel = await _client.GetChannelAsync(bot.AdminChannelId) as IMessageChannel;
-                }
+                bot.adminChannel ??= await _client.GetChannelAsync(bot.AdminChannelId) as IMessageChannel;
                 await bot.adminChannel!.SendMessageAsync(null, false, embed.WithCurrentTimestamp().Build());
             }
             catch (Exception ex)
@@ -72,10 +66,7 @@ namespace HKMPDiscordBot
                 .WithDescription(w.Message.Replace("*", "\\*"))
                 .WithFooter($"From {w.CurrentScene}");
             try {
-                if (bot.mainChannel == null)
-                {
-                    bot.mainChannel = await _client.GetChannelAsync(bot.ChannelId) as IMessageChannel;
-                }
+                bot.mainChannel ??= await _client.GetChannelAsync(bot.ChannelId) as IMessageChannel;
                 await bot.mainChannel!.SendMessageAsync(null, false, embed.Build());
             } catch (Exception ex) {
                 SendErrorMessageToAdmin(bot, ex.ToString());

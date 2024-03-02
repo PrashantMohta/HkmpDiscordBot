@@ -10,7 +10,7 @@ namespace HKMPDiscordBot.Commands
 {
     internal class GetPlayerCommand : Command
     {
-        public override List<string> AliasNames => new List<string> { "?player" , "./player" };
+        public override List<string> AliasNames => new() { "?player" , "./player" };
 
         public override void Execute(BotInstance botInstance, List<string> args, SocketMessage message)
         {

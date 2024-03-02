@@ -10,7 +10,7 @@ namespace HKMPDiscordBot
 {
     internal class BanListSettings
     {
-        public BanList BanList = new BanList();
+        public BanList BanList = new();
 
         public static BanListSettings Instance;
         public static SettingsLoader<BanList> BanListLoader;

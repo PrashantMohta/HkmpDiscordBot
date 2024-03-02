@@ -9,7 +9,7 @@ namespace HKMPDiscordBot.Commands
 {
     internal class HelpCommand : Command
     {
-        public override List<string> AliasNames => new List<string> { "?help" };
+        public override List<string> AliasNames => new() { "?help" };
 
         public override void Execute(BotInstance botInstance, List<string> args, SocketMessage message)
         {

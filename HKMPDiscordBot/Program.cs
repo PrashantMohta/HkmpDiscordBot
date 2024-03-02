@@ -44,8 +44,10 @@ namespace HKMPDiscordBot
             {
                 item.webhookClient = new WebhookClient(item.HkmpAddonWebhook);
             }
-            var webHookServer = new WebhookServer(url, webhookCallback);
-            webHookServer.ExceptionHandler = this.webhookExceptionHandler;
+            var webHookServer = new WebhookServer(url, WebhookCallback)
+            {
+                ExceptionHandler = this.WebhookExceptionHandler
+            };
             Thread thread1 = new Thread(() => {
                 try {
                     webHookServer.Start();
@@ -73,14 +75,14 @@ namespace HKMPDiscordBot
             await _client.LoginAsync(TokenType.Bot, Settings.Instance.Token);
             await _client.StartAsync();
 
-            _client.MessageReceived += _client_MessageReceived;
-            _client.Ready += _client_Ready;
+            _client.MessageReceived += Client_MessageReceived;
+            _client.Ready += Client_Ready;
 
             // Block this task until the program is closed.
             await Task.Delay(-1);
         }
 
-        private void webhookExceptionHandler(HttpListenerContext ctx, Exception ex)
+        private void WebhookExceptionHandler(HttpListenerContext ctx, Exception ex)
         {
 
             foreach (var item in Settings.Instance.bots)
@@ -89,7 +91,7 @@ namespace HKMPDiscordBot
             }
         }
 
-        private async void webhookCallback(HttpListenerContext ctx, Webhooks.WebhookData w)
+        private async void WebhookCallback(HttpListenerContext ctx, Webhooks.WebhookData w)
         {
             Console.WriteLine($"webhookCallback {ctx.Request.Url.AbsolutePath}");
             if(ctx.Request.HttpMethod == "GET" && ctx.Request.Url.AbsolutePath == "/banlist")
@@ -177,7 +179,7 @@ namespace HKMPDiscordBot
             
         }
 
-        private Task _client_Ready()
+        private Task Client_Ready()
         {
             foreach (var item in Settings.Instance.bots)
             {
@@ -189,7 +191,7 @@ namespace HKMPDiscordBot
             return Task.CompletedTask;
         }
 
-        private Task _client_MessageReceived(SocketMessage arg)
+        private Task Client_MessageReceived(SocketMessage arg)
         {
             var botInstance = Settings.Instance.GetBotInstanceByChannelId(arg.Channel.Id);
             var content = arg.Content;

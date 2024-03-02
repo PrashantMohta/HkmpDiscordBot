@@ -10,7 +10,7 @@ namespace HKMPDiscordBot.Commands
 {
     internal class PhrasesCommand : Command
     {
-        public override List<string> AliasNames => new List<string> { "?phrases" , "./phrases"};
+        public override List<string> AliasNames => new() { "?phrases" , "./phrases"};
 
 
         public void AddPhrase(BotInstance botInstance,string phrase) {

@@ -10,7 +10,7 @@ namespace HKMPDiscordBot.Commands
 {
     internal class ListCommand : Command
     {
-        public override List<string> AliasNames => new List<string> { "?list", "./list" };
+        public override List<string> AliasNames => new() { "?list", "./list" };
 
         public override void Execute(BotInstance botInstance, List<string> args, SocketMessage message)
         {
