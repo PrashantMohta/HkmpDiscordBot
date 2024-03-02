@@ -29,20 +29,7 @@ namespace HKMPDiscordBot
             Instance = this;
             Settings.Initialise();
             BanListSettings.Initialise();
-            //register commands
-            List<Command> cmds = new List<Command> { 
-                new ListCommand(),
-                new HelpCommand(),
-                new GetPlayerCommand(),
-                new PhrasesCommand(),
-            };
-            foreach (Command cmd in cmds)
-            {
-                foreach(var alias in cmd.AliasNames)
-                {
-                    CommandManager.AddCommand(alias,cmd);
-                }
-            }
+            CommandManager.Initialise();
         }
 
         public async Task MainAsync()
@@ -206,55 +193,56 @@ namespace HKMPDiscordBot
         {
             var botInstance = Settings.Instance.GetBotInstanceByChannelId(arg.Channel.Id);
             var content = arg.Content;
-            if (botInstance == null)
+            if (botInstance == null || arg.Author.Id != _client.CurrentUser.Id)
             {
                 return Task.Delay(0);
-            } else { 
-                if (arg.Channel.Id == botInstance.AdminChannelId && arg.Author.Id != _client.CurrentUser.Id)
+            }
+            Console.WriteLine($"{arg.Author.Username}:{content}");
+            if (arg.Channel.Id == botInstance.AdminChannelId)
+            {
+                var safeContent = content;
+                if (!CommandManager.ProcessCommand(botInstance, arg))
                 {
-                    var safeContent = content;
-                    if(!CommandManager.ProcessCommand(botInstance, arg))
-                    {
-                        if (content.StartsWith("./"))
-                        {
-                            safeContent = content.Substring(1);
-                        }
-                        Console.WriteLine($"{arg.Author.Username}:{content}");
-                        SendToHKMPAddon(botInstance, new WebhookData
-                        {
-                            UserName = arg.Author.Username,
-                            CurrentScene = arg.Channel.Name,
-                            Message = safeContent,
-                            IsSystem = true,
-                            ServerId = botInstance.ServerId
-                        });
-                    };
-                }
-                if(arg.Channel.Id == botInstance.ChannelId && arg.Author.Id != _client.CurrentUser.Id)
-                {
-                    var safeContent = content;
-                    if (content.StartsWith("/"))
-                    {
-                        safeContent = "//" +content.Substring(1);
-                    } else if (content.StartsWith("\""))
-                    {
-                        safeContent = "''" + content.Substring(1);
-                    } else if (content.StartsWith("?list"))
-                    {
-                        safeContent = "/list";
-                    } else if (content.StartsWith("./list"))
+                    if (content.StartsWith("./"))
                     {
                         safeContent = content.Substring(1);
                     }
-                    Console.WriteLine($"{arg.Author.Username}:{content}");
-                    SendToHKMPAddon(botInstance, new WebhookData {
-                        UserName = arg.Author.Username  ,
-                        CurrentScene = arg.Channel.Name ,
+                    SendToHKMPAddon(botInstance, new WebhookData
+                    {
+                        UserName = arg.Author.Username,
+                        CurrentScene = arg.Channel.Name,
                         Message = safeContent,
+                        IsSystem = true,
                         ServerId = botInstance.ServerId
-                        }
-                    );
+                    });
+                };
+            }
+            if (arg.Channel.Id == botInstance.ChannelId)
+            {
+                var safeContent = content;
+                if (content.StartsWith("/"))
+                {
+                    safeContent = "//" + content.Substring(1);
                 }
+                else if (content.StartsWith("\""))
+                {
+                    safeContent = "''" + content.Substring(1);
+                }
+                else if (content.StartsWith("?list"))
+                {
+                    safeContent = "/list";
+                }
+                else if (content.StartsWith("./list"))
+                {
+                    safeContent = content.Substring(1);
+                }
+                SendToHKMPAddon(botInstance, new WebhookData
+                {
+                    UserName = arg.Author.Username,
+                    CurrentScene = arg.Channel.Name,
+                    Message = safeContent,
+                    ServerId = botInstance.ServerId
+                });
             }
             return Task.Delay(0);
         }

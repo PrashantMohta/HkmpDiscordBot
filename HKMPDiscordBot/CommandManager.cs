@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using HKMPDiscordBot.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -89,6 +90,23 @@ namespace HKMPDiscordBot
                 }
             }
             return outstr;
+        }
+
+        internal static void Initialise()
+        {
+            List<Command> cmds = new List<Command> {
+                new ListCommand(),
+                new HelpCommand(),
+                new GetPlayerCommand(),
+                new PhrasesCommand(),
+            };
+            foreach (Command cmd in cmds)
+            {
+                foreach (var alias in cmd.AliasNames)
+                {
+                    CommandManager.AddCommand(alias, cmd);
+                }
+            }
         }
     }
 }
