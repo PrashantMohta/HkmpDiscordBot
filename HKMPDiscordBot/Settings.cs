@@ -6,7 +6,7 @@ using Webhooks;
 
 namespace HKMPDiscordBot
 {
-    internal class BotInstance
+    public class BotInstance
     {
         public string ServerAlias = "HKMP Server";
         public int ServerId = 0;

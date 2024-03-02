@@ -1,6 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using HKMPDiscordBot.Commands;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -27,6 +29,20 @@ namespace HKMPDiscordBot
             Instance = this;
             Settings.Initialise();
             BanListSettings.Initialise();
+            //register commands
+            List<Command> cmds = new List<Command> { 
+                new ListCommand(),
+                new HelpCommand(),
+                new GetPlayerCommand(),
+                new PhrasesCommand(),
+            };
+            foreach (Command cmd in cmds)
+            {
+                foreach(var alias in cmd.AliasNames)
+                {
+                    CommandManager.AddCommand(alias,cmd);
+                }
+            }
         }
 
         public async Task MainAsync()
@@ -197,128 +213,22 @@ namespace HKMPDiscordBot
                 if (arg.Channel.Id == botInstance.AdminChannelId && arg.Author.Id != _client.CurrentUser.Id)
                 {
                     var safeContent = content;
-                    if (content.StartsWith("?list"))
+                    if(!CommandManager.ProcessCommand(botInstance, arg))
                     {
-                        safeContent = "/list";
-                    }
-                    if (content.StartsWith("./"))
-                    {
-                        safeContent = content.Substring(1);
-                    }
-                    if (content.StartsWith("?help"))
-                    {
-                        var message = $"Commands that botseeker supports : \n\n" +
-                            $"1.General :\n" +
-                            $"```?help```\n Show this message.\n\n" +
-                            $"```?list```\n show a list of connected users.\n" +
-                            $"```?player (authkey|ip) <username>```\n get the player's (authkey|ip).\n" +
-                            $"2.Manage Banned Phrases list :\n" +
-                            $"```?get phrases```\n get a list of all banned phrases.\n" +
-                            $"```?add phrase <phrase>```\n add a new phrase to the banned phrases.\n" +
-                            $"```?remove phrase <phrase>```\n remove a phrase from the banned phrases.\n" +
-                            $"3. Hkmp commands can be used by adding a `.` at the begining.\n" +
-                            $" for example ```./unban <authKey>``` will unban a user.\n";
-                        SendResponseMessageToAdmin(botInstance, $"{message}");
-                    }
-                    if (content.StartsWith("?player"))
-                    {
-                        safeContent = content.Replace("?player","/player");
-                    }
-                    if (content.StartsWith("?get phrases"))
-                    {
-                        var message = $"Banned Phrases list : \n ```{BanListSettings.Instance.BanList.ListPhrases()}``` \n";
-                        SendResponseMessageToAdmin(botInstance, $"{message}");
-                    }
-                    if (content.StartsWith("?add phrase"))
-                    {
-                        var phrase = content.Replace("?add phrase", "").Trim();
-                        try
-                        { 
-                            if(BanListSettings.Instance.BanList.Contains(phrase))
-                            {
-                                throw new Exception($"Banlist Already contains the phrase `{phrase}`");
-                            }
-                            BanListSettings.Instance.BanList.Add(phrase,false);
-                            BanListSettings.Instance.Save();
-                            var message = $"Added `{phrase}` to Banned Phrases list.";
-                            SendResponseMessageToAdmin(botInstance, $"{message}");
-                        }
-                        catch (Exception e)
+                        if (content.StartsWith("./"))
                         {
-                            SendErrorMessageToAdmin(botInstance, e.Message);
+                            safeContent = content.Substring(1);
                         }
-                    }
-                    if (content.StartsWith("?hardban phrase"))
-                    {
-                        var phrase = content.Replace("?hardban phrase", "").Trim();
-                        try
+                        Console.WriteLine($"{arg.Author.Username}:{content}");
+                        SendToHKMPAddon(botInstance, new WebhookData
                         {
-                            var foundPhrase = BanListSettings.Instance.BanList.Find(phrase);
-                            if (foundPhrase != null)
-                            {
-                                foundPhrase.IsHardFilter = true;
-                                BanListSettings.Instance.Save();
-                                var message = $"Added `{phrase}` to Hard Banned Phrases list.";
-                                SendResponseMessageToAdmin(botInstance, $"{message}");
-                            } else
-                            {
-                                throw new Exception($"Banlist does not contain the phrase `{phrase}`");
-                            }
-                           
-                        }
-                        catch (Exception e)
-                        {
-                            SendErrorMessageToAdmin(botInstance, e.Message);
-                        }
-                    }
-                    if (content.StartsWith("?softban phrase"))
-                    {
-                        var phrase = content.Replace("?softban phrase", "").Trim();
-                        try
-                        {
-                            var foundPhrase = BanListSettings.Instance.BanList.Find(phrase);
-                            if (foundPhrase != null)
-                            {
-                                foundPhrase.IsHardFilter = false;
-                                BanListSettings.Instance.Save();
-                                var message = $"Added `{phrase}` to Soft Banned Phrases list.";
-                                SendResponseMessageToAdmin(botInstance, $"{message}");
-                            }
-                            else
-                            {
-                                throw new Exception($"Banlist does not contain the phrase `{phrase}`");
-                            }
-
-                        }
-                        catch (Exception e)
-                        {
-                            SendErrorMessageToAdmin(botInstance, e.Message);
-                        }
-                    }
-                    if (content.StartsWith("?remove phrase"))
-                    {
-                        var phrase = content.Replace("?remove phrase", "").Trim();
-                        try
-                        {
-                            BanListSettings.Instance.BanList.Remove(phrase);
-                            BanListSettings.Instance.Save();
-                            var message = $"Removed `{phrase}` from Banned Phrases list.";
-                            SendResponseMessageToAdmin(botInstance, $"{message}");
-                        }
-                        catch (Exception e)
-                        {
-                            SendErrorMessageToAdmin(botInstance, e.Message);
-                        }
-                    }
-                    Console.WriteLine($"{arg.Author.Username}:{content}");
-                    SendToHKMPAddon(botInstance, new WebhookData
-                    {
-                        UserName = arg.Author.Username,
-                        CurrentScene = arg.Channel.Name,
-                        Message = safeContent,
-                        IsSystem = true,
-                        ServerId = botInstance.ServerId
-                    });
+                            UserName = arg.Author.Username,
+                            CurrentScene = arg.Channel.Name,
+                            Message = safeContent,
+                            IsSystem = true,
+                            ServerId = botInstance.ServerId
+                        });
+                    };
                 }
                 if(arg.Channel.Id == botInstance.ChannelId && arg.Author.Id != _client.CurrentUser.Id)
                 {
