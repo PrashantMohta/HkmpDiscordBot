@@ -6,7 +6,10 @@ namespace HKMPDiscordBot
 {
     internal partial class Program
     {
-
+        public string LimitTo(string s,int limit = 4000)
+        {
+            return s.Length > limit ? s.Substring(0,limit) : s;
+        }
 
         public void SendToHKMPAddon(BotInstance bot, WebhookData Payload)
         {
@@ -27,7 +30,7 @@ namespace HKMPDiscordBot
             var embed = new EmbedBuilder()
                 .WithColor(new Color(50, 0, 0))
                 .WithAuthor($"{bot.BotName} Says")
-                .WithDescription(error.Replace("*", "\\*"));
+                .WithDescription(LimitTo(error.Replace("*", "\\*")));
             try
             {
                 bot.adminChannel ??= await _client.GetChannelAsync(bot.AdminChannelId) as IMessageChannel;
@@ -43,7 +46,7 @@ namespace HKMPDiscordBot
             var embed = new EmbedBuilder()
                 .WithColor(new Color(0, 0, 0))
                 .WithAuthor($"{bot.BotName} Says")
-                .WithDescription(message.Replace("*","\\*"));
+                .WithDescription(LimitTo(message.Replace("*","\\*")));
 
             try
             {
@@ -63,7 +66,7 @@ namespace HKMPDiscordBot
             var embed = new EmbedBuilder()
                 .WithColor(new Color(0, 0, 0))
                 .WithAuthor($"{w.UserName} Says")
-                .WithDescription(w.Message.Replace("*", "\\*"))
+                .WithDescription(LimitTo(w.Message.Replace("*", "\\*")))
                 .WithFooter($"From {w.CurrentScene}");
             try {
                 bot.mainChannel ??= await _client.GetChannelAsync(bot.ChannelId) as IMessageChannel;
