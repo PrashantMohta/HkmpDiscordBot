@@ -195,7 +195,7 @@ namespace HKMPDiscordBot
         {
             var botInstance = Settings.Instance.GetBotInstanceByChannelId(arg.Channel.Id);
             var content = arg.Content;
-            if (botInstance == null || arg.Author.Id != _client.CurrentUser.Id)
+            if (botInstance == null || arg.Author.Id == _client.CurrentUser.Id)
             {
                 return Task.Delay(0);
             }
